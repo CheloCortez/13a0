@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import type { Major } from '$lib/data/types';
-import { DRAFT_ORDER, REROLLS, createDraft, isComplete, pick, reroll } from './draft';
+import { DRAFT_ORDER, REROLLS, createDraft, isComplete, pick, reroll, swapSlots } from './draft';
 
 function makeMajors(count: number, teamsPerMajor: number): Major[] {
 	return Array.from({ length: count }, (_, m) => ({
@@ -81,6 +81,49 @@ describe('pick', () => {
 				seen.add(key);
 			}
 		}
+	});
+});
+
+describe('swapSlots', () => {
+	function completedDraft() {
+		let state = createDraft(majors, 'classic', 6);
+		while (!isComplete(state)) {
+			state = pick(state, majors, state.offer!.team.players[0].nick);
+		}
+		return state;
+	}
+
+	test('troca as funções entre os jogadores dos dois slots', () => {
+		const state = completedDraft();
+		const awper = state.picks.find((p) => p.slot === 'awp')!;
+		const support = state.picks.find((p) => p.slot === 'support')!;
+
+		const swapped = swapSlots(state.picks, 'awp', 'support');
+
+		expect(swapped.find((p) => p.nick === awper.nick)!.slot).toBe('support');
+		expect(swapped.find((p) => p.nick === support.nick)!.slot).toBe('awp');
+	});
+
+	test('preserva os demais jogadores e os dados de origem', () => {
+		const state = completedDraft();
+		const swapped = swapSlots(state.picks, 'igl', 'lurker');
+
+		expect(swapped).toHaveLength(5);
+		expect(new Set(swapped.map((p) => p.slot)).size).toBe(5);
+		for (const p of state.picks) {
+			const after = swapped.find((q) => q.nick === p.nick)!;
+			expect(after.teamName).toBe(p.teamName);
+			expect(after.rating).toBe(p.rating);
+			expect(after.role).toBe(p.role);
+		}
+		expect(swapped.find((p) => p.slot === 'entry')!.nick).toBe(
+			state.picks.find((p) => p.slot === 'entry')!.nick
+		);
+	});
+
+	test('trocar um slot com ele mesmo não muda nada', () => {
+		const state = completedDraft();
+		expect(swapSlots(state.picks, 'awp', 'awp')).toEqual(state.picks);
 	});
 });
 

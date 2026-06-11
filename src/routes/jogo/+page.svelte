@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import PlayerCard from '$lib/components/PlayerCard.svelte';
-	import { ROLE_LABELS } from '$lib/data/types';
+	import { ROLE_LABELS, type Role } from '$lib/data/types';
 	import { DRAFT_ORDER, type GameMode } from '$lib/engine/draft';
 	import { computeAchievements, shareText } from '$lib/engine/share';
 	import { effectiveRating } from '$lib/engine/strength';
@@ -36,6 +36,13 @@
 	});
 
 	const currentRole = $derived(game.draft ? DRAFT_ORDER[game.draft.round] : 'awp');
+	const sortedPicks = $derived(
+		game.draft
+			? [...game.draft.picks].sort(
+					(a, b) => DRAFT_ORDER.indexOf(a.slot) - DRAFT_ORDER.indexOf(b.slot)
+				)
+			: []
+	);
 	const hideRatings = $derived(game.mode === 'almanac' && game.phase === 'draft');
 
 	const achievements = $derived(
@@ -168,12 +175,28 @@
 {:else if game.phase === 'review' && game.draft}
 	<section>
 		<h2>Seu time dos sonhos</h2>
+		<p class="muted swap-hint">
+			Ajuste as funções antes de jogar: mude a função de um jogador e ele troca de lugar com quem
+			estiver nela. Fora da função natural há penalidade de 15%.
+		</p>
 		<div class="panel">
-			{#each game.draft.picks as p (p.slot)}
+			{#each sortedPicks as p (p.nick)}
 				<p class="review-row">
-					<span class="badge badge-{p.slot}">{ROLE_LABELS[p.slot]}</span>
+					<select
+						class="slot-select"
+						value={p.slot}
+						onchange={(e) => game.swap(p.slot, e.currentTarget.value as Role)}
+					>
+						{#each DRAFT_ORDER as role (role)}
+							<option value={role}>{ROLE_LABELS[role]}</option>
+						{/each}
+					</select>
 					<strong>{p.nick}</strong>
-					<span class="muted">{p.teamName} · {p.majorName}</span>
+					<span class="badge badge-{p.role}" title="função natural">{ROLE_LABELS[p.role]}</span>
+					{#if p.role2}
+						<span class="badge badge-{p.role2}" title="função secundária">{ROLE_LABELS[p.role2]}</span>
+					{/if}
+					<span class="muted origin">{p.teamName} · {p.majorName}</span>
 					<span class="rating">
 						{effectiveRating(p).toFixed(2)}{#if effectiveRating(p) < p.rating}&nbsp;<span class="penalty" title="fora de função">▼</span>{/if}
 					</span>
@@ -268,12 +291,35 @@
 		font-size: 0.9rem;
 	}
 
+	.swap-hint {
+		font-size: 0.85rem;
+		margin: 0.2rem 0 0.8rem;
+	}
+
 	.review-row {
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
 		flex-wrap: wrap;
 		margin: 0.5rem 0;
+	}
+
+	.slot-select {
+		font: inherit;
+		font-size: 0.78rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		background: var(--panel-2);
+		color: var(--accent);
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		padding: 0.25rem 0.4rem;
+		cursor: pointer;
+	}
+
+	.slot-select:hover {
+		border-color: var(--accent);
 	}
 
 	.review-row .muted {

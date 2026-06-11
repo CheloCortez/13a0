@@ -91,6 +91,18 @@ export function pick(state: DraftState, majors: Major[], nick: string): DraftSta
 	};
 }
 
+/**
+ * Troca as funções entre os jogadores escalados em dois slots —
+ * personalização do time na revisão, antes de disputar o Major.
+ */
+export function swapSlots(picks: DraftedPlayer[], slotA: Role, slotB: Role): DraftedPlayer[] {
+	return picks.map((p) => {
+		if (p.slot === slotA) return { ...p, slot: slotB };
+		if (p.slot === slotB) return { ...p, slot: slotA };
+		return p;
+	});
+}
+
 /** Troca a oferta atual por outro time, gastando um re-sorteio. */
 export function reroll(state: DraftState, majors: Major[]): DraftState {
 	if (!state.offer) throw new Error('Draft já está completo');

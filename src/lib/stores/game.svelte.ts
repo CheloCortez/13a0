@@ -1,10 +1,11 @@
 import { browser } from '$app/environment';
-import type { Major } from '$lib/data/types';
+import type { Major, Role } from '$lib/data/types';
 import {
 	createDraft,
 	isComplete,
 	pick as draftPick,
 	reroll as draftReroll,
+	swapSlots,
 	type DraftState,
 	type GameMode
 } from '$lib/engine/draft';
@@ -61,6 +62,13 @@ class GameStore {
 	reroll() {
 		if (!this.draft) return;
 		this.draft = draftReroll(this.draft, this.majors);
+		this.save();
+	}
+
+	/** Troca as funções entre dois jogadores na revisão do time. */
+	swap(slotA: Role, slotB: Role) {
+		if (!this.draft) return;
+		this.draft = { ...this.draft, picks: swapSlots(this.draft.picks, slotA, slotB) };
 		this.save();
 	}
 
