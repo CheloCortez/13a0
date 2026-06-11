@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import PlayerCard from '$lib/components/PlayerCard.svelte';
+	import SwissBoard from '$lib/components/SwissBoard.svelte';
 	import TeamCard from '$lib/components/TeamCard.svelte';
 	import { ROLE_LABELS, type Role } from '$lib/data/types';
 	import { DRAFT_ORDER, type GameMode } from '$lib/engine/draft';
@@ -96,6 +97,12 @@
 		}
 		return list;
 	});
+
+	const swissRoundCount = $derived(game.tournament?.swiss.rounds.length ?? 0);
+	const lastSwissStage = $derived(
+		game.revealed > 0 && game.revealed <= swissRoundCount ? stages[game.revealed - 1] : null
+	);
+	const playoffStages = $derived(stages.slice(swissRoundCount, game.revealed));
 
 	function copyShare() {
 		if (!game.tournament) return;
@@ -209,7 +216,29 @@
 {:else if (game.phase === 'tournament' || game.phase === 'result') && game.tournament}
 	<section>
 		<h2>O Major</h2>
-		{#each stages.slice(0, game.revealed) as stage (stage.title)}
+
+		<h3 class="phase-title">Fase suíça</h3>
+		<SwissBoard
+			swiss={game.tournament.swiss}
+			revealed={Math.min(game.revealed, swissRoundCount)}
+		/>
+
+		{#if lastSwissStage}
+			<div class="panel stage">
+				<h3>Resultados — {lastSwissStage.title}</h3>
+				{#each lastSwissStage.matches as m (m.aName + m.bName)}
+					<p class="match" class:user={m.isUser} class:won={m.isUser && m.userWon} class:lost={m.isUser && !m.userWon}>
+						<span class="teams">{m.aName} <em>vs</em> {m.bName}</span>
+						<span class="score">{m.score}</span>
+					</p>
+				{/each}
+			</div>
+		{/if}
+
+		{#if playoffStages.length > 0}
+			<h3 class="phase-title">Playoffs</h3>
+		{/if}
+		{#each playoffStages as stage (stage.title)}
 			<div class="panel stage">
 				<h3>{stage.title}</h3>
 				{#each stage.matches as m (m.aName + m.bName)}
@@ -223,7 +252,7 @@
 
 		{#if game.phase === 'tournament'}
 			<button class="btn big" onclick={() => game.revealNext()}>
-				{game.revealed === 0 ? '▶ Começar o torneio' : '▶ Próxima fase'}
+				{#if game.revealed === 0}▶ Simular Rodada 1{:else if game.revealed < swissRoundCount}▶ Simular Rodada {game.revealed + 1}{:else if game.revealed === swissRoundCount}▶ Começar os playoffs{:else}▶ Próxima fase{/if}
 			</button>
 		{:else if achievements}
 			{@const finish = game.tournament.userFinish}
@@ -350,6 +379,14 @@
 		margin-top: 1rem;
 		padding: 1rem;
 		font-size: 1.05rem;
+	}
+
+	.phase-title {
+		margin: 1.2rem 0 0;
+		font-size: 1rem;
+		color: var(--muted);
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
 	}
 
 	.stage {
