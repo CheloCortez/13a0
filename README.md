@@ -1,42 +1,52 @@
-# sv
+# 13 a 0
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Jogo de browser inspirado no [7 a 0](https://7a0.com.br) (simulador de Copa que viralizou em junho/2026), com o tema **Counter-Strike**: sorteie elencos históricos dos Majors, monte um time dos sonhos função por função e simule um Major inteiro. A glória máxima é vencer um mapa por **13 a 0** — o placar perfeito no MR12.
 
-## Creating a project
+## Como funciona
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **Draft em 5 rodadas** — cada rodada sorteia um time real de um Major (2013 em diante) e você escala um jogador para a função da vez: AWPer, IGL, Entry, Lurker e Suporte. Escalar fora da função natural penaliza o rating em 15%.
+- **Dois modos** — *Clássico* (ratings visíveis, 3 re-sorteios) e *Almanaque* (ratings ocultos, 1 re-sorteio).
+- **O Major** — formato real: fase suíça de 16 times (decisões em MD3) + playoffs de 8 em MD3, mapas simulados round a round no MR12 com overtime.
+- **Compartilhamento** — resultado em grid de emojis estilo Wordle + link com a seed, que reproduz a campanha exata.
 
-```sh
-# create a new project
-npx sv create my-app
+100% estático: sem backend, sem cadastro. Estado em `localStorage`, simulação determinística por seed no cliente.
+
+## Desenvolvimento
+
+Requer Node 18+ (na máquina atual: `export PATH=$HOME/.nvm/versions/node/v22.22.3/bin:$PATH`).
+
+```bash
+npm install
+npm run dev            # servidor de desenvolvimento
+npm run test           # testes do engine (Vitest)
+npm run validate-data  # integridade dos JSONs de Majors
+npm run check          # svelte-check (tipos)
+npm run build          # build estático em build/
+npm run preview        # servir o build localmente
 ```
 
-To recreate this project with the same configuration:
+## Estrutura
 
-```sh
-# recreate this project
-npx sv@0.16.1 create --template minimal --types ts --install npm 13a0
-```
+- `src/lib/engine/` — lógica pura e testada: `rng` (PRNG com seed), `draft`, `strength` (força/penalidades/sinergia), `match` (MR12 + séries), `tournament` (suíça + playoffs), `opponents`, `share` (conquistas + texto de compartilhamento).
+- `src/lib/stores/game.svelte.ts` — orquestração do fluxo + persistência.
+- `src/routes/` — home, `/jogo` (fluxo principal) e `/sobre`.
+- `static/data/majors/` — um JSON por Major (`index.json` é o catálogo). Times com 5 jogadores: `{ nick, role, role2?, rating }`, rating em escala estilo HLTV (0.85–1.35).
 
-## Developing
+### Adicionando um Major
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+1. Crie `static/data/majors/<id>.json` seguindo o formato dos existentes (em majors de 24 times, use os 16 do Legends Stage).
+2. Adicione a entrada em `index.json`.
+3. Rode `npm run validate-data`.
 
-```sh
-npm run dev
+Base atual: **12 Majors** (DreamHack Winter 2013 → PGL Antwerp 2022). Pendentes: Cologne 2016, Atlanta 2017, Boston 2018, Katowice 2019, Berlin 2019, Rio 2022, Paris 2023, Copenhagen 2024, Shanghai 2024, Austin 2025 e o Major atual de 2026.
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+## Deploy
 
-## Building
+O build gera um site estático em `build/` — qualquer CDN gratuita serve:
 
-To create a production version of your app:
+- **Cloudflare Pages / Netlify / Vercel**: aponte para o repositório com build command `npm run build` e output `build/`.
+- Ou suba a pasta `build/` em qualquer hospedagem estática (GitHub Pages inclusive; configure `paths.base` se for servir em subdiretório).
 
-```sh
-npm run build
-```
+## Créditos
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+Mecânica inspirada no 7 a 0 (de @chavozik4) e no 82-0 da NBA. Elencos verificados via Liquipedia/Wikipedia; funções e ratings são estimativas baseadas no desempenho da época. Projeto de fã, sem afiliação com a Valve.
