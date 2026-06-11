@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import PlayerCard from '$lib/components/PlayerCard.svelte';
+	import TeamCard from '$lib/components/TeamCard.svelte';
 	import { ROLE_LABELS, type Role } from '$lib/data/types';
 	import { DRAFT_ORDER, type GameMode } from '$lib/engine/draft';
 	import { computeAchievements, shareText } from '$lib/engine/share';
@@ -132,12 +133,8 @@
 			</p>
 		</header>
 
-		<div class="panel offer">
-			<p class="offer-title">
-				<strong>{offer.team.name}</strong> — {offer.majorName}
-				<span class="muted">({offer.team.placement})</span>
-			</p>
-			<div class="players">
+		<div class="offer">
+			<TeamCard title={offer.team.name} subtitle={offer.majorName} right={offer.team.placement}>
 				{#each offer.team.players as player (player.nick)}
 					<PlayerCard
 						{player}
@@ -146,9 +143,10 @@
 						onclick={() => game.pick(player.nick)}
 					/>
 				{/each}
-			</div>
+			</TeamCard>
 			<p class="hint muted">
-				Escolher fora da função aplica penalidade de 15% no rating do jogador.
+				Toque em um jogador para escalá-lo. Escolher fora da função aplica penalidade de 15% no
+				rating.
 			</p>
 			<button
 				class="btn btn-ghost"
@@ -179,33 +177,28 @@
 			Ajuste as funções antes de jogar: mude a função de um jogador e ele troca de lugar com quem
 			estiver nela. Fora da função natural há penalidade de 15%.
 		</p>
-		<div class="panel">
+		<TeamCard title="Seu Time" subtitle="seed #{game.seed}" right="força {game.userStrength.toFixed(3)}">
 			{#each sortedPicks as p (p.nick)}
-				<p class="review-row">
-					<select
-						class="slot-select"
-						value={p.slot}
-						onchange={(e) => game.swap(p.slot, e.currentTarget.value as Role)}
-					>
-						{#each DRAFT_ORDER as role (role)}
-							<option value={role}>{ROLE_LABELS[role]}</option>
-						{/each}
-					</select>
-					<strong>{p.nick}</strong>
-					<span class="badge badge-{p.role}" title="função natural">{ROLE_LABELS[p.role]}</span>
-					{#if p.role2}
-						<span class="badge badge-{p.role2}" title="função secundária">{ROLE_LABELS[p.role2]}</span>
-					{/if}
-					<span class="muted origin">{p.teamName} · {p.majorName}</span>
-					<span class="rating">
-						{effectiveRating(p).toFixed(2)}{#if effectiveRating(p) < p.rating}&nbsp;<span class="penalty" title="fora de função">▼</span>{/if}
-					</span>
-				</p>
+				<PlayerCard player={p} hideRating>
+					{#snippet footer()}
+						<div class="slot-box">
+							<select
+								class="slot-select"
+								value={p.slot}
+								onchange={(e) => game.swap(p.slot, e.currentTarget.value as Role)}
+							>
+								{#each DRAFT_ORDER as role (role)}
+									<option value={role}>{ROLE_LABELS[role]}</option>
+								{/each}
+							</select>
+							<span class="eff-rating">
+								{effectiveRating(p).toFixed(2)}{#if effectiveRating(p) < p.rating}<span class="penalty" title="fora de função">▼</span>{/if}
+							</span>
+						</div>
+					{/snippet}
+				</PlayerCard>
 			{/each}
-			<p class="strength">
-				Força do time: <strong>{game.userStrength.toFixed(3)}</strong>
-			</p>
-		</div>
+		</TeamCard>
 		<button class="btn big" onclick={() => game.confirm()}>🏆 Disputar o Major</button>
 	</section>
 {:else if (game.phase === 'tournament' || game.phase === 'result') && game.tournament}
@@ -263,16 +256,6 @@
 		margin-top: 1rem;
 	}
 
-	.offer-title {
-		margin-top: 0;
-	}
-
-	.players {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
-
 	.hint {
 		font-size: 0.8rem;
 	}
@@ -296,39 +279,36 @@
 		margin: 0.2rem 0 0.8rem;
 	}
 
-	.review-row {
+	.slot-box {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
-		gap: 0.5rem;
-		flex-wrap: wrap;
-		margin: 0.5rem 0;
+		gap: 0.2rem;
+		width: 100%;
 	}
 
 	.slot-select {
 		font: inherit;
-		font-size: 0.78rem;
+		font-size: 0.68rem;
 		font-weight: 700;
 		text-transform: uppercase;
-		letter-spacing: 0.04em;
+		letter-spacing: 0.03em;
 		background: var(--panel-2);
 		color: var(--accent);
 		border: 1px solid var(--border);
 		border-radius: 8px;
-		padding: 0.25rem 0.4rem;
+		padding: 0.22rem 0.2rem;
 		cursor: pointer;
+		max-width: 100%;
 	}
 
 	.slot-select:hover {
 		border-color: var(--accent);
 	}
 
-	.review-row .muted {
-		font-size: 0.85rem;
-	}
-
-	.review-row .rating {
-		margin-left: auto;
+	.eff-rating {
 		font-weight: 700;
+		font-size: 0.8rem;
 		color: var(--accent);
 		font-variant-numeric: tabular-nums;
 	}
@@ -336,12 +316,6 @@
 	.penalty {
 		color: var(--loss);
 		font-size: 0.75rem;
-	}
-
-	.strength {
-		border-top: 1px solid var(--border);
-		padding-top: 0.7rem;
-		margin-bottom: 0;
 	}
 
 	.big {
