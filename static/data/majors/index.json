@@ -1,0 +1,10 @@
+[
+	{ "id": "dh-winter-2013", "name": "DreamHack Winter 2013", "year": 2013, "city": "Jönköping", "champion": "Fnatic" },
+	{ "id": "katowice-2014", "name": "EMS One Katowice 2014", "year": 2014, "city": "Katowice", "champion": "Virtus.pro" },
+	{ "id": "katowice-2015", "name": "ESL One Katowice 2015", "year": 2015, "city": "Katowice", "champion": "Fnatic" },
+	{ "id": "columbus-2016", "name": "MLG Columbus 2016", "year": 2016, "city": "Columbus", "champion": "Luminosity" },
+	{ "id": "krakow-2017", "name": "PGL Major Kraków 2017", "year": 2017, "city": "Cracóvia", "champion": "Gambit" },
+	{ "id": "london-2018", "name": "FACEIT Major London 2018", "year": 2018, "city": "Londres", "champion": "Astralis" },
+	{ "id": "stockholm-2021", "name": "PGL Major Stockholm 2021", "year": 2021, "city": "Estocolmo", "champion": "Natus Vincere" },
+	{ "id": "antwerp-2022", "name": "PGL Major Antwerp 2022", "year": 2022, "city": "Antuérpia", "champion": "FaZe Clan" }
+]
