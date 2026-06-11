@@ -1,0 +1,120 @@
+{
+	"id": "cluj-2015",
+	"name": "DreamHack Cluj-Napoca 2015",
+	"year": 2015,
+	"city": "Cluj-Napoca",
+	"teams": [
+		{ "id": "envyus", "name": "Team EnVyUs", "placement": "Campeão", "players": [
+			{ "nick": "Happy", "role": "igl", "rating": 1.15, "role2": "lurker" },
+			{ "nick": "kennyS", "role": "awp", "rating": 1.3 },
+			{ "nick": "apEX", "role": "entry", "rating": 1.1 },
+			{ "nick": "NBK-", "role": "support", "rating": 1.1 },
+			{ "nick": "kioShiMa", "role": "lurker", "rating": 1.05 }
+		] },
+		{ "id": "navi", "name": "Natus Vincere", "placement": "Vice", "players": [
+			{ "nick": "Zeus", "role": "igl", "rating": 1.0 },
+			{ "nick": "GuardiaN", "role": "awp", "rating": 1.3 },
+			{ "nick": "Edward", "role": "lurker", "rating": 1.05 },
+			{ "nick": "seized", "role": "entry", "rating": 1.05 },
+			{ "nick": "flamie", "role": "support", "rating": 1.1 }
+		] },
+		{ "id": "g2", "name": "G2 Esports", "placement": "3º-4º", "players": [
+			{ "nick": "Maikelele", "role": "awp", "rating": 1.0 },
+			{ "nick": "fox", "role": "igl", "rating": 0.95 },
+			{ "nick": "rain", "role": "entry", "rating": 1.15 },
+			{ "nick": "dennis", "role": "lurker", "rating": 1.1 },
+			{ "nick": "jkaem", "role": "support", "rating": 1.05 }
+		] },
+		{ "id": "tsm", "name": "Team SoloMid", "placement": "3º-4º", "players": [
+			{ "nick": "karrigan", "role": "igl", "rating": 1.0 },
+			{ "nick": "device", "role": "awp", "rating": 1.25 },
+			{ "nick": "dupreeh", "role": "entry", "rating": 1.15 },
+			{ "nick": "Xyp9x", "role": "support", "rating": 1.1 },
+			{ "nick": "cajunb", "role": "lurker", "rating": 1.05 }
+		] },
+		{ "id": "fnatic", "name": "Fnatic", "placement": "5º-8º", "players": [
+			{ "nick": "pronax", "role": "igl", "rating": 1.0 },
+			{ "nick": "JW", "role": "awp", "rating": 1.2 },
+			{ "nick": "flusha", "role": "lurker", "rating": 1.2 },
+			{ "nick": "olofmeister", "role": "entry", "rating": 1.25 },
+			{ "nick": "KRIMZ", "role": "support", "rating": 1.15 }
+		] },
+		{ "id": "virtuspro", "name": "Virtus.pro", "placement": "5º-8º", "players": [
+			{ "nick": "TaZ", "role": "igl", "rating": 1.05 },
+			{ "nick": "NEO", "role": "lurker", "rating": 1.15 },
+			{ "nick": "pashaBiceps", "role": "awp", "rating": 1.15 },
+			{ "nick": "Snax", "role": "support", "rating": 1.2 },
+			{ "nick": "byali", "role": "entry", "rating": 1.1 }
+		] },
+		{ "id": "nip", "name": "Ninjas in Pyjamas", "placement": "5º-8º", "players": [
+			{ "nick": "Xizt", "role": "igl", "rating": 1.0 },
+			{ "nick": "allu", "role": "awp", "rating": 1.05 },
+			{ "nick": "GeT_RiGhT", "role": "lurker", "rating": 1.15 },
+			{ "nick": "f0rest", "role": "entry", "rating": 1.2 },
+			{ "nick": "friberg", "role": "entry", "rating": 1.05 }
+		] },
+		{ "id": "luminosity", "name": "Luminosity Gaming", "placement": "5º-8º", "players": [
+			{ "nick": "FalleN", "role": "awp", "rating": 1.15, "role2": "igl" },
+			{ "nick": "coldzera", "role": "lurker", "rating": 1.2 },
+			{ "nick": "fer", "role": "entry", "rating": 1.1 },
+			{ "nick": "steel", "role": "support", "rating": 1.0, "role2": "igl" },
+			{ "nick": "boltz", "role": "entry", "rating": 1.05 }
+		] },
+		{ "id": "cloud9", "name": "Cloud9", "placement": "9º-12º", "players": [
+			{ "nick": "sgares", "role": "igl", "rating": 0.95 },
+			{ "nick": "Skadoodle", "role": "awp", "rating": 1.05 },
+			{ "nick": "shroud", "role": "entry", "rating": 1.05 },
+			{ "nick": "n0thing", "role": "lurker", "rating": 1.05 },
+			{ "nick": "fREAKAZOiD", "role": "entry", "rating": 1.0 }
+		] },
+		{ "id": "clg", "name": "Counter Logic Gaming", "placement": "13º-16º", "players": [
+			{ "nick": "reltuC", "role": "igl", "rating": 0.95 },
+			{ "nick": "jdm64", "role": "awp", "rating": 1.05 },
+			{ "nick": "tarik", "role": "entry", "rating": 1.1 },
+			{ "nick": "hazed", "role": "lurker", "rating": 0.95 },
+			{ "nick": "FNS", "role": "support", "rating": 0.9 }
+		] },
+		{ "id": "mouz", "name": "mousesports", "placement": "9º-12º", "players": [
+			{ "nick": "gob b", "role": "igl", "rating": 1.0 },
+			{ "nick": "NiKo", "role": "entry", "rating": 1.2 },
+			{ "nick": "chrisJ", "role": "awp", "rating": 1.05 },
+			{ "nick": "nex", "role": "support", "rating": 1.0 },
+			{ "nick": "denis", "role": "lurker", "rating": 0.95 }
+		] },
+		{ "id": "titan", "name": "Titan", "placement": "9º-12º", "players": [
+			{ "nick": "Ex6TenZ", "role": "igl", "rating": 1.0 },
+			{ "nick": "shox", "role": "lurker", "rating": 1.2 },
+			{ "nick": "ScreaM", "role": "entry", "rating": 1.15 },
+			{ "nick": "RpK", "role": "support", "rating": 1.0 },
+			{ "nick": "SmithZz", "role": "awp", "rating": 0.95 }
+		] },
+		{ "id": "dignitas", "name": "Team Dignitas", "placement": "13º-16º", "players": [
+			{ "nick": "MSL", "role": "igl", "rating": 0.95 },
+			{ "nick": "aizy", "role": "entry", "rating": 1.1 },
+			{ "nick": "Kjaerbye", "role": "lurker", "rating": 1.05 },
+			{ "nick": "Pimp", "role": "awp", "rating": 0.95 },
+			{ "nick": "tenzki", "role": "support", "rating": 0.9 }
+		] },
+		{ "id": "flipsid3", "name": "FlipSid3 Tactics", "placement": "13º-16º", "players": [
+			{ "nick": "B1ad3", "role": "igl", "rating": 0.95 },
+			{ "nick": "WorldEdit", "role": "awp", "rating": 1.05 },
+			{ "nick": "bondik", "role": "entry", "rating": 1.0 },
+			{ "nick": "markeloff", "role": "lurker", "rating": 1.0, "role2": "awp" },
+			{ "nick": "DavCost", "role": "support", "rating": 0.85 }
+		] },
+		{ "id": "liquid", "name": "Team Liquid", "placement": "13º-16º", "players": [
+			{ "nick": "adreN", "role": "igl", "rating": 0.95 },
+			{ "nick": "nitr0", "role": "awp", "rating": 1.0 },
+			{ "nick": "EliGE", "role": "entry", "rating": 1.1 },
+			{ "nick": "Hiko", "role": "lurker", "rating": 1.1 },
+			{ "nick": "FugLy", "role": "support", "rating": 0.9 }
+		] },
+		{ "id": "vexed", "name": "Vexed Gaming", "placement": "13º-16º", "players": [
+			{ "nick": "Furlan", "role": "igl", "rating": 0.85 },
+			{ "nick": "Hyper", "role": "entry", "rating": 0.9 },
+			{ "nick": "GruBy", "role": "awp", "rating": 0.9 },
+			{ "nick": "peet", "role": "lurker", "rating": 0.85 },
+			{ "nick": "rallen", "role": "support", "rating": 0.9 }
+		] }
+	]
+}
