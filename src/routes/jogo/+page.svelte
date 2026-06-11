@@ -158,15 +158,20 @@
 		</div>
 
 		{#if game.draft.picks.length > 0}
-			<div class="panel picks">
-				<h3>Seu time até agora</h3>
-				{#each game.draft.picks as p (p.slot)}
-					<p>
-						<span class="badge badge-{p.slot}">{ROLE_LABELS[p.slot]}</span>
-						<strong>{p.nick}</strong>
-						<span class="muted">({p.teamName} · {p.majorName})</span>
-					</p>
-				{/each}
+			<div class="picks">
+				<TeamCard title="Seu time até agora" subtitle="{game.draft.picks.length}/5">
+					{#each DRAFT_ORDER as role (role)}
+						{@const drafted = game.draft.picks.find((p) => p.slot === role)}
+						{#if drafted}
+							<PlayerCard player={drafted} hideRating={hideRatings} />
+						{:else}
+							<div class="empty-tile" class:next={role === currentRole}>
+								<span class="empty-portrait" aria-hidden="true">?</span>
+								<span class="badge badge-{role}">{ROLE_LABELS[role]}</span>
+							</div>
+						{/if}
+					{/each}
+				</TeamCard>
 			</div>
 		{/if}
 	</section>
@@ -264,14 +269,36 @@
 		margin-top: 1rem;
 	}
 
-	.picks h3 {
-		margin: 0 0 0.5rem;
-		font-size: 0.95rem;
+	.empty-tile {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.3rem;
+		min-width: 0;
 	}
 
-	.picks p {
-		margin: 0.3rem 0;
-		font-size: 0.9rem;
+	.empty-portrait {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		aspect-ratio: 4 / 5;
+		border: 1px dashed var(--border);
+		border-radius: 8px;
+		color: var(--muted);
+		font-size: 1.6rem;
+		font-weight: 800;
+		background: color-mix(in srgb, var(--panel-2) 55%, transparent);
+	}
+
+	.empty-tile.next .empty-portrait {
+		border-color: var(--accent);
+		color: var(--accent);
+	}
+
+	.empty-tile .badge {
+		font-size: 0.62rem;
+		padding: 0.08rem 0.4rem;
 	}
 
 	.swap-hint {
