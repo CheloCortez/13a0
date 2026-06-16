@@ -1,0 +1,57 @@
+{
+	"id": "paris-2023",
+	"name": "BLAST.tv Paris Major 2023",
+	"year": 2023,
+	"city": "Paris",
+	"teams": [
+		{ "id": "vitality", "name": "Team Vitality", "placement": "Campeão", "players": [
+			{ "nick": "apEX", "role": "igl", "rating": 1.02 },
+			{ "nick": "ZywOo", "role": "awp", "rating": 1.41 },
+			{ "nick": "dupreeh", "role": "entry", "rating": 1.12 },
+			{ "nick": "Spinx", "role": "lurker", "rating": 1.25 },
+			{ "nick": "Magisk", "role": "support", "rating": 1.1 }
+		] },
+		{ "id": "gamerlegion", "name": "GamerLegion", "placement": "Vice", "players": [
+			{ "nick": "siuhy", "role": "igl", "rating": 1.04 },
+			{ "nick": "acoR", "role": "awp", "rating": 1.03 },
+			{ "nick": "iM", "role": "entry", "rating": 1.12 },
+			{ "nick": "isak", "role": "lurker", "rating": 1.19 },
+			{ "nick": "Keoz", "role": "support", "rating": 0.99 }
+		] },
+		{ "id": "heroic", "name": "Heroic", "placement": "3º-4º", "players": [
+			{ "nick": "cadiaN", "role": "igl", "rating": 1.03, "role2": "awp" },
+			{ "nick": "stavn", "role": "lurker", "rating": 1.19 },
+			{ "nick": "TeSeS", "role": "entry", "rating": 1.15 },
+			{ "nick": "sjuush", "role": "support", "rating": 0.95 },
+			{ "nick": "jabbi", "role": "entry", "rating": 1.04 }
+		] },
+		{ "id": "apeks", "name": "Apeks", "placement": "3º-4º", "players": [
+			{ "nick": "kyxsan", "role": "igl", "rating": 1.02 },
+			{ "nick": "nawwk", "role": "awp", "rating": 1.04 },
+			{ "nick": "jL", "role": "entry", "rating": 1.17 },
+			{ "nick": "jkaem", "role": "lurker", "rating": 1.07 },
+			{ "nick": "STYKO", "role": "support", "rating": 0.87 }
+		] },
+		{ "id": "faze", "name": "FaZe Clan", "placement": "5º-8º", "players": [
+			{ "nick": "karrigan", "role": "igl", "rating": 1.02 },
+			{ "nick": "broky", "role": "awp", "rating": 1.21 },
+			{ "nick": "rain", "role": "entry", "rating": 1.09 },
+			{ "nick": "Twistzz", "role": "lurker", "rating": 1.15 },
+			{ "nick": "ropz", "role": "support", "rating": 1.24 }
+		] },
+		{ "id": "monte", "name": "Monte", "placement": "5º-8º", "players": [
+			{ "nick": "DemQQ", "role": "igl", "rating": 0.93 },
+			{ "nick": "Woro2k", "role": "awp", "rating": 1.09 },
+			{ "nick": "BOROS", "role": "entry", "rating": 0.97 },
+			{ "nick": "sdy", "role": "lurker", "rating": 0.96 },
+			{ "nick": "kRaSnaL", "role": "support", "rating": 0.93 }
+		] },
+		{ "id": "liquid", "name": "Team Liquid", "placement": "5º-8º", "players": [
+			{ "nick": "nitr0", "role": "igl", "rating": 0.93 },
+			{ "nick": "EliGE", "role": "entry", "rating": 1.15 },
+			{ "nick": "YEKINDAR", "role": "entry", "rating": 1.24 },
+			{ "nick": "NAF", "role": "lurker", "rating": 1.13 },
+			{ "nick": "oSee", "role": "awp", "rating": 1.06 }
+		] }
+	]
+}

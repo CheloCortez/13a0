@@ -1,63 +1,170 @@
 import { describe, expect, test } from 'vitest';
-import type { DraftedPlayer, Team } from '$lib/data/types';
-import { effectiveRating, historicTeamStrength, teamStrength } from './strength';
+import type { DraftedPlayer, Role, Team } from '$lib/data/types';
+import {
+	dynastyBonus,
+	effectiveRating,
+	historicTeamStrength,
+	resolveRoles,
+	teamModifiers,
+	teamStrength
+} from './strength';
 
-function drafted(partial: Partial<DraftedPlayer> & Pick<DraftedPlayer, 'nick' | 'role' | 'slot' | 'rating'>): DraftedPlayer {
-	return { teamName: `Time ${partial.nick}`, majorId: 'major-x', majorName: 'Major X', ...partial };
+function dp(
+	partial: Partial<DraftedPlayer> & Pick<DraftedPlayer, 'nick' | 'role' | 'rating'>
+): DraftedPlayer {
+	return {
+		slot: partial.role,
+		teamName: `Time ${partial.nick}`,
+		majorId: 'major-x',
+		majorName: 'Major X',
+		...partial
+	};
 }
 
-const fullTeam: DraftedPlayer[] = [
-	drafted({ nick: 'awper', role: 'awp', slot: 'awp', rating: 1.2 }),
-	drafted({ nick: 'leader', role: 'igl', slot: 'igl', rating: 1.0 }),
-	drafted({ nick: 'rusher', role: 'entry', slot: 'entry', rating: 1.1 }),
-	drafted({ nick: 'sneaky', role: 'lurker', slot: 'lurker', rating: 1.1 }),
-	drafted({ nick: 'helper', role: 'support', slot: 'support', rating: 1.0 })
+// time equilibrado: uma função de cada, organizações distintas
+const balanced: DraftedPlayer[] = [
+	dp({ nick: 'awper', role: 'awp', rating: 1.2 }),
+	dp({ nick: 'leader', role: 'igl', rating: 1.0 }),
+	dp({ nick: 'rusher', role: 'entry', rating: 1.1 }),
+	dp({ nick: 'sneaky', role: 'lurker', rating: 1.1 }),
+	dp({ nick: 'helper', role: 'support', rating: 1.0 })
 ];
+const AVG = (1.2 + 1.0 + 1.1 + 1.1 + 1.0) / 5; // 1.08
 
 describe('effectiveRating', () => {
-	test('jogador na função natural usa rating cheio', () => {
-		expect(effectiveRating(drafted({ nick: 'a', role: 'awp', slot: 'awp', rating: 1.2 }))).toBe(1.2);
+	test('é o próprio rating (sem penalidade de fora de função)', () => {
+		expect(effectiveRating({ rating: 1.2 })).toBe(1.2);
+	});
+});
+
+describe('resolveRoles', () => {
+	test('jogadores puros ficam na função primária', () => {
+		expect(resolveRoles([{ role: 'awp' }, { role: 'lurker' }, { role: 'lurker' }])).toEqual([
+			'awp',
+			'lurker',
+			'lurker'
+		]);
 	});
 
-	test('jogador na função secundária usa rating cheio', () => {
-		const p = drafted({ nick: 'a', role: 'awp', role2: 'igl', slot: 'igl', rating: 1.2 });
-		expect(effectiveRating(p)).toBe(1.2);
+	test('híbrido evita conflito jogando a 2ª função (FalleN awp/igl + device awp)', () => {
+		expect(resolveRoles([{ role: 'awp', role2: 'igl' }, { role: 'awp' }])).toEqual(['igl', 'awp']);
 	});
 
-	test('jogador fora de função sofre penalidade de 15%', () => {
-		const p = drafted({ nick: 'a', role: 'awp', slot: 'igl', rating: 1.2 });
-		expect(effectiveRating(p)).toBeCloseTo(1.2 * 0.85);
+	test('sem conflito, o híbrido mantém a função primária', () => {
+		expect(resolveRoles([{ role: 'awp', role2: 'igl' }, { role: 'entry' }])).toEqual([
+			'awp',
+			'entry'
+		]);
 	});
 });
 
 describe('teamStrength', () => {
-	test('time completo nas funções naturais = média dos ratings', () => {
-		const avg = (1.2 + 1.0 + 1.1 + 1.1 + 1.0) / 5;
-		expect(teamStrength(fullTeam)).toBeCloseTo(avg);
+	test('time equilibrado = média dos ratings (sem penalidade nem bônus)', () => {
+		expect(teamStrength(balanced)).toBeCloseTo(AVG);
 	});
 
-	test('sem AWPer natural no slot de awp aplica -8%', () => {
-		const team = fullTeam.map((p) =>
-			p.slot === 'awp' ? drafted({ nick: 'rifler', role: 'entry', slot: 'awp', rating: 1.2 }) : p
-		);
-		const base = (1.2 * 0.85 + 1.0 + 1.1 + 1.1 + 1.0) / 5;
-		expect(teamStrength(team)).toBeCloseTo(base * 0.92);
+	test('dois lurkers aplicam -4%', () => {
+		const team = balanced.map((p) => (p.role === 'entry' ? dp({ nick: 'lk2', role: 'lurker', rating: 1.1 }) : p));
+		expect(teamStrength(team)).toBeCloseTo(AVG * 0.96);
 	});
 
-	test('sem IGL natural no slot de igl aplica -10%', () => {
-		const team = fullTeam.map((p) =>
-			p.slot === 'igl' ? drafted({ nick: 'rifler', role: 'entry', slot: 'igl', rating: 1.0 }) : p
+	test('três lurkers acumulam (×0.96^2)', () => {
+		const team = balanced.map((p) =>
+			p.role === 'entry' || p.role === 'support'
+				? dp({ nick: `lk-${p.role}`, role: 'lurker', rating: 1.0 })
+				: p
 		);
-		const base = (1.2 + 1.0 * 0.85 + 1.1 + 1.1 + 1.0) / 5;
-		expect(teamStrength(team)).toBeCloseTo(base * 0.9);
+		const avg = (1.2 + 1.0 + 1.1 + 1.0 + 1.0) / 5;
+		expect(teamStrength(team)).toBeCloseTo(avg * 0.96 ** 2);
 	});
 
-	test('dois jogadores do mesmo time/major dão +3% de sinergia', () => {
-		const team = fullTeam.map((p, i) =>
-			i < 2 ? { ...p, teamName: 'Astralis', majorId: 'london-2018' } : p
+	test('dois AWPers puros aplicam -8%', () => {
+		const team = balanced.map((p) => (p.role === 'entry' ? dp({ nick: 'awp2', role: 'awp', rating: 1.1 }) : p));
+		expect(teamStrength(team)).toBeCloseTo(AVG * 0.92);
+	});
+
+	test('dois IGLs puros aplicam -8%', () => {
+		const team = balanced.map((p) => (p.role === 'entry' ? dp({ nick: 'igl2', role: 'igl', rating: 1.1 }) : p));
+		expect(teamStrength(team)).toBeCloseTo(AVG * 0.92);
+	});
+
+	test('AWPer híbrido escalado de IGL (slot=igl) NÃO penaliza, mesmo ao lado de um AWPer', () => {
+		const team = balanced.map((p) =>
+			p.role === 'igl' ? dp({ nick: 'FalleN', role: 'awp', role2: 'igl', rating: 1.0, slot: 'igl' }) : p
 		);
-		const avg = (1.2 + 1.0 + 1.1 + 1.1 + 1.0) / 5;
-		expect(teamStrength(team)).toBeCloseTo(avg * 1.03);
+		expect(teamStrength(team)).toBeCloseTo(AVG);
+	});
+
+	test('a penalidade segue o slot escalado, não a função natural', () => {
+		// um entry de ofício escalado como 2º AWP gera o conflito de AWP (−8%)
+		const team = balanced.map((p) =>
+			p.role === 'entry' ? dp({ nick: 'forced', role: 'entry', rating: 1.1, slot: 'awp' }) : p
+		);
+		expect(teamStrength(team)).toBeCloseTo(AVG * 0.92);
+	});
+
+	test('três jogadores da mesma organização dão +4%', () => {
+		const team: DraftedPlayer[] = [
+			dp({ nick: 'a', role: 'awp', rating: 1.2, teamName: 'Astralis' }),
+			dp({ nick: 'b', role: 'igl', rating: 1.0, teamName: 'Astralis' }),
+			dp({ nick: 'c', role: 'entry', rating: 1.1, teamName: 'Astralis' }),
+			dp({ nick: 'd', role: 'lurker', rating: 1.1 }),
+			dp({ nick: 'e', role: 'support', rating: 1.0 })
+		];
+		expect(teamStrength(team)).toBeCloseTo(AVG * 1.04);
+	});
+
+	test('cinco AWPers puros acumulam a penalidade (×0.92^4)', () => {
+		const team = ['a', 'b', 'c', 'd', 'e'].map((n) => dp({ nick: n, role: 'awp', rating: 1.0 }));
+		expect(teamStrength(team)).toBeCloseTo(1.0 * 0.92 ** 4);
+	});
+});
+
+describe('teamModifiers', () => {
+	test('time equilibrado não tem modificadores', () => {
+		expect(teamModifiers(balanced)).toEqual([]);
+	});
+
+	test('dois AWPers puros listam conflito de AWP', () => {
+		const team = balanced.map((p) => (p.role === 'entry' ? dp({ nick: 'awp2', role: 'awp', rating: 1.1 }) : p));
+		expect(teamModifiers(team)).toContainEqual({
+			kind: 'awp-conflict',
+			count: 2,
+			pct: expect.closeTo(-8)
+		});
+	});
+
+	test('dois lurkers listam conflito de função', () => {
+		const team = balanced.map((p) => (p.role === 'entry' ? dp({ nick: 'lk2', role: 'lurker', rating: 1.0 }) : p));
+		expect(teamModifiers(team)).toContainEqual({
+			kind: 'frag-conflict',
+			role: 'lurker' as Role,
+			count: 2,
+			pct: expect.closeTo(-4)
+		});
+	});
+
+	test('três da mesma organização listam o bônus de sinergia', () => {
+		const team = balanced.map((p, i) => (i < 3 ? dp({ ...p, teamName: 'Astralis' }) : p));
+		expect(teamModifiers(team)).toContainEqual({
+			kind: 'same-team',
+			team: 'Astralis',
+			count: 3,
+			pct: expect.closeTo(4)
+		});
+	});
+});
+
+describe('dynastyBonus', () => {
+	test('0 ou 1 título = sem bônus', () => {
+		expect(dynastyBonus(0)).toBe(1.00);
+		expect(dynastyBonus(1)).toBe(1.00);
+	});
+	test('2 títulos = +4%', () => expect(dynastyBonus(2)).toBe(1.04));
+	test('3 títulos = +7%', () => expect(dynastyBonus(3)).toBe(1.07));
+	test('4+ títulos = +10%', () => {
+		expect(dynastyBonus(4)).toBe(1.10);
+		expect(dynastyBonus(5)).toBe(1.10);
 	});
 });
 

@@ -1,0 +1,64 @@
+{
+	"id": "shanghai-2024",
+	"name": "Perfect World Shanghai Major 2024",
+	"year": 2024,
+	"city": "Xangai",
+	"teams": [
+		{ "id": "spirit", "name": "Team Spirit", "placement": "Campeão", "players": [
+			{ "nick": "chopper", "role": "igl", "rating": 0.93 },
+			{ "nick": "sh1ro", "role": "awp", "rating": 1.39 },
+			{ "nick": "donk", "role": "entry", "rating": 1.45 },
+			{ "nick": "zont1x", "role": "lurker", "rating": 1.2 },
+			{ "nick": "magixx", "role": "support", "rating": 1.11 }
+		] },
+		{ "id": "faze", "name": "FaZe Clan", "placement": "Vice", "players": [
+			{ "nick": "karrigan", "role": "igl", "rating": 0.93 },
+			{ "nick": "broky", "role": "awp", "rating": 1.26 },
+			{ "nick": "rain", "role": "entry", "rating": 1.19 },
+			{ "nick": "frozen", "role": "entry", "rating": 1.23 },
+			{ "nick": "ropz", "role": "lurker", "rating": 1.2 }
+		] },
+		{ "id": "mouz", "name": "MOUZ", "placement": "3º-4º", "players": [
+			{ "nick": "siuhy", "role": "igl", "rating": 1.01 },
+			{ "nick": "torzsi", "role": "awp", "rating": 1.22 },
+			{ "nick": "Jimpphat", "role": "entry", "rating": 1.19 },
+			{ "nick": "Brollan", "role": "lurker", "rating": 1.15 },
+			{ "nick": "xertioN", "role": "support", "rating": 1.03 }
+		] },
+		{ "id": "g2", "name": "G2 Esports", "placement": "3º-4º", "players": [
+			{ "nick": "Snax", "role": "igl", "rating": 0.88 },
+			{ "nick": "m0NESY", "role": "awp", "rating": 1.38 },
+			{ "nick": "NiKo", "role": "entry", "rating": 1.28 },
+			{ "nick": "huNter-", "role": "lurker", "rating": 1.07 },
+			{ "nick": "malbsMd", "role": "support", "rating": 1.03 }
+		] },
+		{ "id": "mongolz", "name": "The MongolZ", "placement": "5º-8º", "players": [
+			{ "nick": "bLitz", "role": "igl", "rating": 0.98 },
+			{ "nick": "910", "role": "awp", "rating": 1.1 },
+			{ "nick": "Techno4K", "role": "entry", "rating": 1.01 },
+			{ "nick": "mzinho", "role": "lurker", "rating": 1.16 },
+			{ "nick": "Senzu", "role": "support", "rating": 1.01 }
+		] },
+		{ "id": "liquid", "name": "Team Liquid", "placement": "5º-8º", "players": [
+			{ "nick": "NAF", "role": "igl", "rating": 0.94, "role2": "lurker" },
+			{ "nick": "ultimate", "role": "awp", "rating": 1.01 },
+			{ "nick": "Twistzz", "role": "entry", "rating": 1.13 },
+			{ "nick": "YEKINDAR", "role": "entry", "rating": 1.08 },
+			{ "nick": "jks", "role": "lurker", "rating": 1.02 }
+		] },
+		{ "id": "heroic", "name": "Heroic", "placement": "5º-8º", "players": [
+			{ "nick": "kyxsan", "role": "igl", "rating": 0.98 },
+			{ "nick": "degster", "role": "awp", "rating": 1.15 },
+			{ "nick": "TeSeS", "role": "entry", "rating": 1.08 },
+			{ "nick": "NertZ", "role": "lurker", "rating": 1.08 },
+			{ "nick": "sjuush", "role": "support", "rating": 0.98 }
+		] },
+		{ "id": "vitality", "name": "Team Vitality", "placement": "5º-8º", "players": [
+			{ "nick": "apEX", "role": "igl", "rating": 0.98 },
+			{ "nick": "ZywOo", "role": "awp", "rating": 1.43 },
+			{ "nick": "flameZ", "role": "entry", "rating": 1.29 },
+			{ "nick": "Spinx", "role": "lurker", "rating": 1.16 },
+			{ "nick": "mezii", "role": "support", "rating": 1.03 }
+		] }
+	]
+}

@@ -1,11 +1,19 @@
 import { simulateSeries, type SeriesResult } from './match';
 import type { Rng } from './rng';
 
+/** Jogador resumido para o scoreboard: nick + rating (efetivo). */
+export interface RosterPlayer {
+	nick: string;
+	rating: number;
+}
+
 export interface TournamentTeam {
 	id: string;
 	name: string;
 	strength: number;
 	isUser?: boolean;
+	/** Elenco para o box score (5 jogadores). Opcional para retrocompat. */
+	players?: RosterPlayer[];
 }
 
 export interface TeamRecord {
@@ -136,26 +144,31 @@ export function simulateSwiss(teams: TournamentTeam[], rng: Rng): SwissResult {
 	return { rounds, qualified, eliminated, records };
 }
 
-/** Playoffs de 8 times: quartas, semis e final, tudo BO3. */
+/** Playoffs de 8 times: quartas e semis BO3, grande final BO5. */
 export function simulatePlayoffs(qualified: TournamentTeam[], rng: Rng): PlayoffsResult {
 	const seeds = shuffle(qualified, rng);
-	const playMatch = (a: TournamentTeam, b: TournamentTeam): BracketMatch => ({
+	const playBo3 = (a: TournamentTeam, b: TournamentTeam): BracketMatch => ({
 		a,
 		b,
 		series: simulateSeries(a.strength, b.strength, 3, rng)
 	});
+	const playBo5 = (a: TournamentTeam, b: TournamentTeam): BracketMatch => ({
+		a,
+		b,
+		series: simulateSeries(a.strength, b.strength, 5, rng)
+	});
 
 	const quarterfinals = [
-		playMatch(seeds[0], seeds[7]),
-		playMatch(seeds[3], seeds[4]),
-		playMatch(seeds[1], seeds[6]),
-		playMatch(seeds[2], seeds[5])
+		playBo3(seeds[0], seeds[7]),
+		playBo3(seeds[3], seeds[4]),
+		playBo3(seeds[1], seeds[6]),
+		playBo3(seeds[2], seeds[5])
 	];
 	const semifinals = [
-		playMatch(winnerOf(quarterfinals[0]), winnerOf(quarterfinals[1])),
-		playMatch(winnerOf(quarterfinals[2]), winnerOf(quarterfinals[3]))
+		playBo3(winnerOf(quarterfinals[0]), winnerOf(quarterfinals[1])),
+		playBo3(winnerOf(quarterfinals[2]), winnerOf(quarterfinals[3]))
 	];
-	const final = playMatch(winnerOf(semifinals[0]), winnerOf(semifinals[1]));
+	const final = playBo5(winnerOf(semifinals[0]), winnerOf(semifinals[1]));
 
 	return { quarterfinals, semifinals, final, champion: winnerOf(final) };
 }

@@ -1,51 +1,88 @@
 :root {
-	--bg: #0b0e13;
-	--panel: #151a23;
-	--panel-2: #1c2430;
-	--border: #2a3442;
-	--text: #e8e6e3;
-	--muted: #8a94a3;
-	--accent: #f0a13b;
-	--accent-dark: #c87f1d;
-	--win: #4ade80;
-	--loss: #f87171;
-	--awp: #38bdf8;
-	--igl: #f0a13b;
-	--entry: #f87171;
-	--lurker: #a78bfa;
-	--support: #4ade80;
+	/* Paleta — grafite azulado profundo com laranja TR e azul CT */
+	--bg: #0d1219;
+	--bg-raise: #11161e;
+	--panel: #151c26;
+	--panel-2: #1b2431;
+	--panel-3: #222e3d;
+	--border: #2b3949;
+	--border-strong: #3c4d61;
+	--text: #edf1f5;
+	--muted: #8b9aab;
+	--accent: #f6a821;
+	--accent-bright: #ffc24f;
+	--accent-dark: #b97a10;
+	--ct: #6cb2f0;
+	--win: #5fdd92;
+	--loss: #ff7a6e;
+	--awp: #4fc3f7;
+	--igl: #f6a821;
+	--entry: #ff7a6e;
+	--lurker: #b094f8;
+	--support: #5fdd92;
+
+	--font-display: 'Rajdhani', 'Arial Narrow', sans-serif;
+	--font-body: 'Barlow', system-ui, sans-serif;
+
+	/* Chanfro padrão dos cantos (estética CS2) */
+	--cut: 10px;
+	--cut-sm: 7px;
 }
 
 * {
 	box-sizing: border-box;
 }
 
+html {
+	background: var(--bg);
+}
+
 body {
 	margin: 0;
-	background: var(--bg);
 	color: var(--text);
-	font-family:
-		system-ui,
-		-apple-system,
-		'Segoe UI',
-		Roboto,
-		sans-serif;
-	line-height: 1.5;
+	font-family: var(--font-body);
+	line-height: 1.55;
 	-webkit-font-smoothing: antialiased;
+	background:
+		radial-gradient(56rem 30rem at 85% -8rem, rgba(246, 168, 33, 0.07), transparent 60%),
+		radial-gradient(50rem 34rem at -10% 110%, rgba(108, 178, 240, 0.06), transparent 60%),
+		var(--bg);
+	background-attachment: fixed;
+	min-height: 100dvh;
+	position: relative;
+}
+
+/* Grade tática sutil ao fundo */
+body::before {
+	content: '';
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	background-image:
+		linear-gradient(rgba(139, 154, 171, 0.04) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(139, 154, 171, 0.04) 1px, transparent 1px);
+	background-size: 44px 44px;
+	mask-image: radial-gradient(80rem 50rem at 50% 0, #000 0%, transparent 75%);
+	z-index: 0;
 }
 
 main {
-	max-width: 640px;
+	max-width: 700px;
 	margin: 0 auto;
-	padding: 1rem 1rem 4rem;
+	padding: 1rem clamp(0.85rem, 3vw, 1.25rem) 4.5rem;
+	position: relative;
+	z-index: 1;
 }
 
 h1,
 h2,
-h3 {
-	font-weight: 800;
-	letter-spacing: -0.02em;
-	line-height: 1.15;
+h3,
+h4 {
+	font-family: var(--font-display);
+	font-weight: 700;
+	letter-spacing: 0.015em;
+	line-height: 1.1;
+	text-transform: uppercase;
 }
 
 a {
@@ -56,58 +93,147 @@ button {
 	font: inherit;
 	cursor: pointer;
 	border: none;
-	border-radius: 8px;
+	border-radius: 0;
 }
 
+/* ===== Botões — chanfrados, tipografia de HUD ===== */
 .btn {
 	display: inline-block;
-	padding: 0.7rem 1.4rem;
-	background: var(--accent);
-	color: #14100a;
+	padding: 0.78rem 1.5rem;
+	background: linear-gradient(180deg, var(--accent-bright), var(--accent));
+	color: #1a1206;
+	font-family: var(--font-display);
+	font-size: 1rem;
 	font-weight: 700;
-	transition: filter 0.15s;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
 	text-decoration: none;
 	text-align: center;
+	clip-path: polygon(
+		var(--cut) 0,
+		100% 0,
+		100% calc(100% - var(--cut)),
+		calc(100% - var(--cut)) 100%,
+		0 100%,
+		0 var(--cut)
+	);
+	transition:
+		filter 0.15s,
+		transform 0.15s;
 }
 
 .btn:hover {
-	filter: brightness(1.1);
+	filter: brightness(1.12);
+	transform: translateY(-1px);
+}
+
+.btn:active {
+	transform: translateY(0);
 }
 
 .btn:disabled {
 	opacity: 0.4;
 	cursor: not-allowed;
+	transform: none;
+	filter: none;
 }
 
 .btn-ghost {
-	background: transparent;
+	background: var(--panel-2);
 	color: var(--text);
-	border: 1px solid var(--border);
+	box-shadow: inset 0 0 0 1px var(--border-strong);
 }
 
+.btn-ghost:hover {
+	filter: none;
+	background: var(--panel-3);
+	box-shadow: inset 0 0 0 1px var(--accent);
+	color: var(--accent-bright);
+}
+
+/* ===== Painéis — cantos retos, filete superior, leve profundidade ===== */
 .panel {
-	background: var(--panel);
+	background: linear-gradient(180deg, var(--panel-2), var(--panel));
 	border: 1px solid var(--border);
-	border-radius: 12px;
+	border-top: 2px solid var(--border-strong);
 	padding: 1rem;
+	box-shadow: 0 10px 24px -18px rgba(0, 0, 0, 0.9);
 }
 
 .muted {
 	color: var(--muted);
 }
 
+/* ===== Selos de função — retângulos chanfrados estilo HUD ===== */
 .badge {
 	display: inline-block;
-	padding: 0.1rem 0.5rem;
-	border-radius: 999px;
+	padding: 0.12rem 0.5rem;
+	font-family: var(--font-display);
 	font-size: 0.72rem;
 	font-weight: 700;
 	text-transform: uppercase;
-	letter-spacing: 0.04em;
+	letter-spacing: 0.08em;
+	clip-path: polygon(
+		var(--cut-sm) 0,
+		100% 0,
+		100% calc(100% - var(--cut-sm)),
+		calc(100% - var(--cut-sm)) 100%,
+		0 100%,
+		0 var(--cut-sm)
+	);
 }
 
-.badge-awp { background: color-mix(in srgb, var(--awp) 20%, transparent); color: var(--awp); }
-.badge-igl { background: color-mix(in srgb, var(--igl) 20%, transparent); color: var(--igl); }
-.badge-entry { background: color-mix(in srgb, var(--entry) 20%, transparent); color: var(--entry); }
-.badge-lurker { background: color-mix(in srgb, var(--lurker) 20%, transparent); color: var(--lurker); }
-.badge-support { background: color-mix(in srgb, var(--support) 20%, transparent); color: var(--support); }
+.badge-awp { background: color-mix(in srgb, var(--awp) 18%, var(--panel-3)); color: var(--awp); }
+.badge-igl { background: color-mix(in srgb, var(--igl) 18%, var(--panel-3)); color: var(--igl); }
+.badge-entry { background: color-mix(in srgb, var(--entry) 18%, var(--panel-3)); color: var(--entry); }
+.badge-lurker { background: color-mix(in srgb, var(--lurker) 18%, var(--panel-3)); color: var(--lurker); }
+.badge-support { background: color-mix(in srgb, var(--support) 18%, var(--panel-3)); color: var(--support); }
+
+/* ===== Utilitários compartilhados ===== */
+
+/* Etiqueta pequena estilo "LIVE" da HLTV */
+.tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	font-family: var(--font-display);
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.14em;
+	color: var(--accent);
+}
+
+.tag::before {
+	content: '';
+	width: 1.4rem;
+	height: 2px;
+	background: var(--accent);
+}
+
+/* Entrada escalonada — aplicar com style="--i: n" */
+.rise {
+	animation: rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+	animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+@keyframes rise {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.rise {
+		animation: none;
+	}
+
+	.btn:hover {
+		transform: none;
+	}
+}

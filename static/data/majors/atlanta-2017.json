@@ -1,0 +1,64 @@
+{
+	"id": "atlanta-2017",
+	"name": "ELEAGUE Major Atlanta 2017",
+	"year": 2017,
+	"city": "Atlanta",
+	"teams": [
+		{ "id": "astralis", "name": "Astralis", "placement": "Campeão", "players": [
+			{ "nick": "device", "role": "awp", "rating": 1.41 },
+			{ "nick": "dupreeh", "role": "entry", "rating": 1.23 },
+			{ "nick": "Xyp9x", "role": "support", "rating": 1.09 },
+			{ "nick": "gla1ve", "role": "igl", "rating": 1.01 },
+			{ "nick": "Kjaerbye", "role": "lurker", "rating": 1.2 }
+		] },
+		{ "id": "vp", "name": "Virtus.pro", "placement": "Vice", "players": [
+			{ "nick": "TaZ", "role": "igl", "rating": 0.93 },
+			{ "nick": "byali", "role": "awp", "rating": 1.15 },
+			{ "nick": "NEO", "role": "entry", "rating": 1.15 },
+			{ "nick": "pashaBiceps", "role": "support", "rating": 1.05 },
+			{ "nick": "Snax", "role": "lurker", "rating": 1.24 }
+		] },
+		{ "id": "fnatic", "name": "Fnatic", "placement": "3º-4º", "players": [
+			{ "nick": "olofmeister", "role": "entry", "rating": 1.19 },
+			{ "nick": "dennis", "role": "lurker", "rating": 1.18 },
+			{ "nick": "twist", "role": "awp", "rating": 1.07 },
+			{ "nick": "KRIMZ", "role": "support", "rating": 1.09 },
+			{ "nick": "disco doplan", "role": "igl", "rating": 0.88 }
+		] },
+		{ "id": "sk", "name": "SK Gaming", "placement": "3º-4º", "players": [
+			{ "nick": "FalleN", "role": "awp", "rating": 1.24, "role2": "igl" },
+			{ "nick": "coldzera", "role": "lurker", "rating": 1.4 },
+			{ "nick": "fer", "role": "entry", "rating": 1.25 },
+			{ "nick": "TACO", "role": "support", "rating": 0.92 },
+			{ "nick": "fox", "role": "entry", "rating": 0.95 }
+		] },
+		{ "id": "navi", "name": "Natus Vincere", "placement": "5º-8º", "players": [
+			{ "nick": "GuardiaN", "role": "awp", "rating": 1.25 },
+			{ "nick": "s1mple", "role": "entry", "rating": 1.32, "role2": "awp" },
+			{ "nick": "flamie", "role": "lurker", "rating": 1.12 },
+			{ "nick": "Edward", "role": "support", "rating": 0.98 },
+			{ "nick": "seized", "role": "igl", "rating": 0.92 }
+		] },
+		{ "id": "gambit", "name": "Gambit Esports", "placement": "5º-8º", "players": [
+			{ "nick": "Zeus", "role": "igl", "rating": 1.01 },
+			{ "nick": "AdreN", "role": "entry", "rating": 1.09 },
+			{ "nick": "Dosia", "role": "lurker", "rating": 0.99 },
+			{ "nick": "mou", "role": "awp", "rating": 1 },
+			{ "nick": "HObbit", "role": "support", "rating": 1.13 }
+		] },
+		{ "id": "north", "name": "North", "placement": "5º-8º", "players": [
+			{ "nick": "MSL", "role": "igl", "rating": 0.85 },
+			{ "nick": "k0nfig", "role": "entry", "rating": 1.15 },
+			{ "nick": "RUBINO", "role": "support", "rating": 0.89 },
+			{ "nick": "cajunb", "role": "awp", "rating": 1.09 },
+			{ "nick": "Magisk", "role": "lurker", "rating": 1.15 }
+		] },
+		{ "id": "faze", "name": "FaZe Clan", "placement": "5º-8º", "players": [
+			{ "nick": "rain", "role": "entry", "rating": 1.2 },
+			{ "nick": "aizy", "role": "lurker", "rating": 0.97 },
+			{ "nick": "allu", "role": "awp", "rating": 1.07 },
+			{ "nick": "karrigan", "role": "igl", "rating": 0.99 },
+			{ "nick": "kioShiMa", "role": "support", "rating": 0.95 }
+		] }
+	]
+}

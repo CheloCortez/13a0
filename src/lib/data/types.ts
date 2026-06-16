@@ -16,7 +16,7 @@ export interface Player {
 	role: Role;
 	/** Função secundária para jogadores híbridos (ex: FalleN é awp + igl). */
 	role2?: Role;
-	/** Escala estilo HLTV: 0.85 (fraco) a 1.35 (lendário), relativa ao desempenho na época do Major. */
+	/** Escala estilo HLTV: ~0.80 (fraco) a ~1.45 (lendário), relativa ao desempenho na época do Major. */
 	rating: number;
 }
 
@@ -53,5 +53,5 @@ export interface DraftedPlayer extends Player {
 	majorName: string;
 }
 
-export const RATING_MIN = 0.85;
-export const RATING_MAX = 1.35;
+export const RATING_MIN = 0.8;
+export const RATING_MAX = 1.45;

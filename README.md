@@ -30,15 +30,15 @@ npm run preview        # servir o build localmente
 - `src/lib/engine/` — lógica pura e testada: `rng` (PRNG com seed), `draft`, `strength` (força/penalidades/sinergia), `match` (MR12 + séries), `tournament` (suíça + playoffs), `opponents`, `share` (conquistas + texto de compartilhamento).
 - `src/lib/stores/game.svelte.ts` — orquestração do fluxo + persistência.
 - `src/routes/` — home, `/jogo` (fluxo principal) e `/sobre`.
-- `static/data/majors/` — um JSON por Major (`index.json` é o catálogo). Times com 5 jogadores: `{ nick, role, role2?, rating }`, rating em escala estilo HLTV (0.85–1.35).
+- `static/data/majors/` — um JSON por Major (`index.json` é o catálogo). Cada Major traz **apenas os 8 times que chegaram aos playoffs** (Champions Stage / stage 3) daquele Major — só elencos memoráveis, sem times de fase de grupos. Times com 5 jogadores: `{ nick, role, role2?, rating }`, rating em escala estilo HLTV (0.85–1.35).
 
 ### Adicionando um Major
 
-1. Crie `static/data/majors/<id>.json` seguindo o formato dos existentes (em majors de 24 times, use os 16 do Legends Stage).
-2. Adicione a entrada em `index.json`.
+1. Crie `static/data/majors/<id>.json` com **só os 8 times do playoff** (Campeão, Vice, dois 3º-4º e quatro 5º-8º), seguindo o formato dos existentes.
+2. Adicione a entrada em `index.json` (mantenha a ordem cronológica).
 3. Rode `npm run validate-data`.
 
-Base atual: **12 Majors** (DreamHack Winter 2013 → PGL Antwerp 2022). Pendentes: Cologne 2016, Atlanta 2017, Boston 2018, Katowice 2019, Berlin 2019, Rio 2022, Paris 2023, Copenhagen 2024, Shanghai 2024, Austin 2025 e o Major atual de 2026.
+Base atual: **23 Majors** (DreamHack Winter 2013 → StarLadder Budapest 2025), 8 times de playoff cada. Pendente: o Major em andamento (IEM Cologne 2026), a ser adicionado quando seu Champions Stage estiver definido.
 
 ## Deploy
 

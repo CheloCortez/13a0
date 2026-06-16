@@ -66,10 +66,10 @@
 <div class="board">
 	{#if qualified.length > 0}
 		<div class="box green">
-			<h4>✅ Classificados aos playoffs</h4>
+			<h4>Classificados aos playoffs</h4>
 			<div class="list">
 				{#each qualified as s (s.team.id)}
-					<TeamChip name={s.team.name} isUser={s.team.isUser} record="{s.wins}-{s.losses}" />
+					<TeamChip name={s.team.name} id={s.team.id} isUser={s.team.isUser} record="{s.wins}-{s.losses}" />
 				{/each}
 			</div>
 		</div>
@@ -80,9 +80,9 @@
 			<h4>{record}</h4>
 			{#each matches as m (m.a.id + m.b.id)}
 				<div class="pair" class:user={m.a.isUser || m.b.isUser}>
-					<TeamChip name={m.a.name} isUser={m.a.isUser} />
+					<TeamChip name={m.a.name} id={m.a.id} isUser={m.a.isUser} />
 					<span class="vs">vs</span>
-					<TeamChip name={m.b.name} isUser={m.b.isUser} />
+					<TeamChip name={m.b.name} id={m.b.id} isUser={m.b.isUser} />
 				</div>
 			{/each}
 		</div>
@@ -90,10 +90,10 @@
 
 	{#if eliminated.length > 0}
 		<div class="box red">
-			<h4>❌ Eliminados</h4>
+			<h4>Eliminados</h4>
 			<div class="list">
 				{#each eliminated as s (s.team.id)}
-					<TeamChip name={s.team.name} isUser={s.team.isUser} record="{s.wins}-{s.losses}" />
+					<TeamChip name={s.team.name} id={s.team.id} isUser={s.team.isUser} record="{s.wins}-{s.losses}" />
 				{/each}
 			</div>
 		</div>
@@ -109,21 +109,25 @@
 	}
 
 	h4 {
-		margin: 0 0 0.45rem;
-		font-size: 0.8rem;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
+		margin: 0 0 0.5rem;
+		font-size: 0.82rem;
+		letter-spacing: 0.12em;
 	}
 
 	.bucket {
-		background: var(--panel);
+		background: linear-gradient(180deg, var(--panel-2), var(--panel));
 		border: 1px solid var(--border);
-		border-radius: 10px;
-		padding: 0.7rem 0.8rem;
+		padding: 0.65rem 0.8rem;
 	}
 
+	/* Registro (ex: 2-1) como selo chanfrado */
 	.bucket h4 {
-		color: var(--accent);
+		display: inline-block;
+		color: #1a1206;
+		background: var(--accent);
+		padding: 0.06rem 0.55rem 0;
+		font-variant-numeric: tabular-nums;
+		clip-path: polygon(var(--cut-sm) 0, 100% 0, 100% calc(100% - var(--cut-sm)), calc(100% - var(--cut-sm)) 100%, 0 100%, 0 var(--cut-sm));
 	}
 
 	.pair {
@@ -131,8 +135,7 @@
 		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
 		gap: 0.5rem;
-		padding: 0.35rem 0.4rem;
-		border-radius: 8px;
+		padding: 0.38rem 0.4rem;
 	}
 
 	.pair + .pair {
@@ -140,7 +143,8 @@
 	}
 
 	.pair.user {
-		background: var(--panel-2);
+		background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 10%, transparent), transparent 60%);
+		box-shadow: inset 2px 0 0 var(--accent);
 	}
 
 	.pair :global(.chip:last-of-type) {
@@ -148,15 +152,16 @@
 	}
 
 	.vs {
+		font-family: var(--font-display);
 		color: var(--muted);
-		font-size: 0.68rem;
+		font-size: 0.7rem;
 		font-weight: 700;
 		text-transform: uppercase;
+		letter-spacing: 0.1em;
 	}
 
 	.box {
-		border-radius: 10px;
-		padding: 0.7rem 0.8rem;
+		padding: 0.65rem 0.8rem;
 		border: 1px solid;
 	}
 
@@ -167,8 +172,11 @@
 	}
 
 	.box.green {
-		background: color-mix(in srgb, #14532d 55%, var(--panel));
-		border-color: #1d7a40;
+		background:
+			linear-gradient(180deg, color-mix(in srgb, var(--win) 11%, transparent), transparent),
+			var(--panel);
+		border-color: color-mix(in srgb, var(--win) 38%, var(--border));
+		border-top-width: 2px;
 	}
 
 	.box.green h4 {
@@ -176,8 +184,11 @@
 	}
 
 	.box.red {
-		background: color-mix(in srgb, #5c1313 55%, var(--panel));
-		border-color: #8c2626;
+		background:
+			linear-gradient(180deg, color-mix(in srgb, var(--loss) 10%, transparent), transparent),
+			var(--panel);
+		border-color: color-mix(in srgb, var(--loss) 35%, var(--border));
+		border-top-width: 2px;
 	}
 
 	.box.red h4 {

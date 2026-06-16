@@ -14,7 +14,8 @@ function match(opts: { won: boolean; maps: [number, number][]; userIsA?: boolean
 				scoreA: userIsA ? u : o,
 				scoreB: userIsA ? o : u,
 				winner: (userIsA ? u > o : o > u) ? ('A' as const) : ('B' as const),
-				overtime: false
+				overtime: false,
+				rounds: []
 			})),
 			scoreA: 0,
 			scoreB: 0,

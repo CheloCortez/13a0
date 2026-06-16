@@ -1,9 +1,10 @@
 import type { DraftedPlayer, Major, Role, Team } from '$lib/data/types';
 import { Rng } from './rng';
+import { resolveRoles } from './strength';
 
 export type GameMode = 'classic' | 'almanac';
 
-/** Ordem das rodadas do draft, uma função por rodada. */
+/** Ordem canônica das funções (exibição). */
 export const DRAFT_ORDER: Role[] = ['awp', 'igl', 'entry', 'lurker', 'support'];
 
 export const REROLLS: Record<GameMode, number> = { classic: 3, almanac: 1 };
@@ -59,7 +60,30 @@ export function isComplete(state: DraftState): boolean {
 	return state.picks.length === DRAFT_ORDER.length;
 }
 
-/** Escala o jogador `nick` da oferta atual no slot da rodada e avança. */
+/**
+ * Define a função que cada jogador exerce (`slot`) usando apenas suas funções
+ * naturais (role/role2), resolvendo híbridos para minimizar conflitos de
+ * composição. Funções repetidas são permitidas (ex.: dois lurkers).
+ */
+export function assignSlots(picks: DraftedPlayer[]): DraftedPlayer[] {
+	if (picks.length === 0) return picks;
+	const roles = resolveRoles(picks);
+	return picks.map((p, i) => ({ ...p, slot: roles[i] }));
+}
+
+/**
+ * Reatribui manualmente a função (`slot`) de um jogador — qualquer função das 5,
+ * inclusive repetida e mesmo que gere penalidade. Usado na revisão (drag and drop);
+ * a escolha manual NÃO é sobrescrita pela realocação automática.
+ */
+export function setSlot(picks: DraftedPlayer[], nick: string, role: Role): DraftedPlayer[] {
+	return picks.map((p) => (p.nick === nick ? { ...p, slot: role } : p));
+}
+
+/**
+ * Escala o jogador `nick` da oferta atual — qualquer função, inclusive
+ * repetida — e avança. Os slots do elenco são realocados a cada pick.
+ */
 export function pick(state: DraftState, majors: Major[], nick: string): DraftState {
 	if (!state.offer) throw new Error('Draft já está completo');
 	const player = state.offer.team.players.find((p) => p.nick === nick);
@@ -67,13 +91,13 @@ export function pick(state: DraftState, majors: Major[], nick: string): DraftSta
 
 	const drafted: DraftedPlayer = {
 		...player,
-		slot: DRAFT_ORDER[state.round],
+		slot: player.role,
 		teamName: state.offer.team.name,
 		majorId: state.offer.majorId,
 		majorName: state.offer.majorName
 	};
 
-	const picks = [...state.picks, drafted];
+	const picks = assignSlots([...state.picks, drafted]);
 	const round = state.round + 1;
 	if (round >= DRAFT_ORDER.length) {
 		return { ...state, round, picks, offer: null };
@@ -89,18 +113,6 @@ export function pick(state: DraftState, majors: Major[], nick: string): DraftSta
 		usedTeamKeys: [...state.usedTeamKeys, offerKey(offer)],
 		rngState: rng.state
 	};
-}
-
-/**
- * Troca as funções entre os jogadores escalados em dois slots —
- * personalização do time na revisão, antes de disputar o Major.
- */
-export function swapSlots(picks: DraftedPlayer[], slotA: Role, slotB: Role): DraftedPlayer[] {
-	return picks.map((p) => {
-		if (p.slot === slotA) return { ...p, slot: slotB };
-		if (p.slot === slotB) return { ...p, slot: slotA };
-		return p;
-	});
 }
 
 /** Troca a oferta atual por outro time, gastando um re-sorteio. */

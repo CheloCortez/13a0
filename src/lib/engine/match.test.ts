@@ -51,6 +51,16 @@ describe('simulateMap', () => {
 		const b = simulateMap(1.1, 1.0, new Rng(55));
 		expect(a).toEqual(b);
 	});
+
+	test('a sequência de rounds bate com o placar final', () => {
+		const rng = new Rng(321);
+		for (let i = 0; i < 200; i++) {
+			const r = simulateMap(1.1, 1.0, rng);
+			expect(r.rounds).toHaveLength(r.scoreA + r.scoreB);
+			expect(r.rounds.filter((w) => w === 'A')).toHaveLength(r.scoreA);
+			expect(r.rounds.filter((w) => w === 'B')).toHaveLength(r.scoreB);
+		}
+	});
 });
 
 describe('simulateSeries', () => {

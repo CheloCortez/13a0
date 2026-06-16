@@ -5,6 +5,8 @@ export interface MapResult {
 	scoreB: number;
 	winner: 'A' | 'B';
 	overtime: boolean;
+	/** Sequência de quem venceu cada round, na ordem — alimenta o placar ao vivo. */
+	rounds: ('A' | 'B')[];
 }
 
 export interface SeriesResult {
@@ -31,39 +33,42 @@ function playRound(p: number, rng: Rng): 'A' | 'B' {
 /** Simula um mapa MR12 (13 rounds vencem; 12-12 vai a overtime MR3). */
 export function simulateMap(strengthA: number, strengthB: number, rng: Rng): MapResult {
 	const p = roundWinProb(strengthA, strengthB);
+	const rounds: ('A' | 'B')[] = [];
 	let scoreA = 0;
 	let scoreB = 0;
-
-	while (scoreA < 13 && scoreB < 13 && !(scoreA === 12 && scoreB === 12)) {
-		if (playRound(p, rng) === 'A') scoreA++;
+	const round = () => {
+		const w = playRound(p, rng);
+		rounds.push(w);
+		if (w === 'A') scoreA++;
 		else scoreB++;
-	}
+	};
+
+	while (scoreA < 13 && scoreB < 13 && !(scoreA === 12 && scoreB === 12)) round();
 
 	let overtime = false;
 	if (scoreA === 12 && scoreB === 12) {
 		overtime = true;
 		// Blocos MR3: primeiro a 4 vitórias no bloco leva; 3-3 reinicia o bloco.
 		for (;;) {
-			let blockA = 0;
-			let blockB = 0;
-			while (blockA < 4 && blockB < 4 && !(blockA === 3 && blockB === 3)) {
-				if (playRound(p, rng) === 'A') blockA++;
-				else blockB++;
-			}
-			scoreA += blockA;
-			scoreB += blockB;
-			if (blockA !== blockB) break;
+			const before = { a: scoreA, b: scoreB };
+			while (
+				scoreA - before.a < 4 &&
+				scoreB - before.b < 4 &&
+				!(scoreA - before.a === 3 && scoreB - before.b === 3)
+			)
+				round();
+			if (scoreA - before.a !== scoreB - before.b) break;
 		}
 	}
 
-	return { scoreA, scoreB, winner: scoreA > scoreB ? 'A' : 'B', overtime };
+	return { scoreA, scoreB, winner: scoreA > scoreB ? 'A' : 'B', overtime, rounds };
 }
 
-/** Simula uma série BO1 ou BO3. */
+/** Simula uma série BO1, BO3 ou BO5. */
 export function simulateSeries(
 	strengthA: number,
 	strengthB: number,
-	bestOf: 1 | 3,
+	bestOf: 1 | 3 | 5,
 	rng: Rng
 ): SeriesResult {
 	const toWin = Math.ceil(bestOf / 2);

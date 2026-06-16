@@ -7,8 +7,20 @@
 	{ "id": "cologne-2015", "name": "ESL One Cologne 2015", "year": 2015, "city": "Colônia", "champion": "Fnatic" },
 	{ "id": "cluj-2015", "name": "DreamHack Cluj-Napoca 2015", "year": 2015, "city": "Cluj-Napoca", "champion": "Team EnVyUs" },
 	{ "id": "columbus-2016", "name": "MLG Columbus 2016", "year": 2016, "city": "Columbus", "champion": "Luminosity" },
+	{ "id": "cologne-2016", "name": "ESL One Cologne 2016", "year": 2016, "city": "Colônia", "champion": "SK Gaming" },
+	{ "id": "atlanta-2017", "name": "ELEAGUE Major Atlanta 2017", "year": 2017, "city": "Atlanta", "champion": "Astralis" },
 	{ "id": "krakow-2017", "name": "PGL Major Kraków 2017", "year": 2017, "city": "Cracóvia", "champion": "Gambit" },
+	{ "id": "boston-2018", "name": "ELEAGUE Major Boston 2018", "year": 2018, "city": "Boston", "champion": "Cloud9" },
 	{ "id": "london-2018", "name": "FACEIT Major London 2018", "year": 2018, "city": "Londres", "champion": "Astralis" },
+	{ "id": "katowice-2019", "name": "IEM Katowice Major 2019", "year": 2019, "city": "Katowice", "champion": "Astralis" },
+	{ "id": "berlin-2019", "name": "StarLadder Berlin Major 2019", "year": 2019, "city": "Berlim", "champion": "Astralis" },
 	{ "id": "stockholm-2021", "name": "PGL Major Stockholm 2021", "year": 2021, "city": "Estocolmo", "champion": "Natus Vincere" },
-	{ "id": "antwerp-2022", "name": "PGL Major Antwerp 2022", "year": 2022, "city": "Antuérpia", "champion": "FaZe Clan" }
+	{ "id": "antwerp-2022", "name": "PGL Major Antwerp 2022", "year": 2022, "city": "Antuérpia", "champion": "FaZe Clan" },
+	{ "id": "rio-2022", "name": "IEM Rio Major 2022", "year": 2022, "city": "Rio de Janeiro", "champion": "Outsiders" },
+	{ "id": "paris-2023", "name": "BLAST.tv Paris Major 2023", "year": 2023, "city": "Paris", "champion": "Team Vitality" },
+	{ "id": "copenhagen-2024", "name": "PGL Major Copenhagen 2024", "year": 2024, "city": "Copenhague", "champion": "Natus Vincere" },
+	{ "id": "shanghai-2024", "name": "Perfect World Shanghai Major 2024", "year": 2024, "city": "Xangai", "champion": "Team Spirit" },
+	{ "id": "austin-2025", "name": "BLAST.tv Austin Major 2025", "year": 2025, "city": "Austin", "champion": "Team Vitality" },
+	{ "id": "budapest-2025", "name": "StarLadder Budapest Major 2025", "year": 2025, "city": "Budapeste", "champion": "Team Vitality" },
+	{ "id": "cologne-2026", "name": "IEM Cologne Major 2026", "year": 2026, "city": "Colônia", "champion": "A definir" }
 ]

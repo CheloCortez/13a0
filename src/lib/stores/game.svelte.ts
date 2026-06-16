@@ -1,17 +1,18 @@
 import { browser } from '$app/environment';
-import type { Major, Role } from '$lib/data/types';
+import type { Major } from '$lib/data/types';
+import type { Role } from '$lib/data/types';
 import {
 	createDraft,
 	isComplete,
 	pick as draftPick,
 	reroll as draftReroll,
-	swapSlots,
+	setSlot as draftSetSlot,
 	type DraftState,
 	type GameMode
 } from '$lib/engine/draft';
 import { buildOpponents } from '$lib/engine/opponents';
 import { Rng, randomSeed } from '$lib/engine/rng';
-import { teamStrength } from '$lib/engine/strength';
+import { effectiveRating, teamStrength } from '$lib/engine/strength';
 import { simulateTournament, type TournamentResult } from '$lib/engine/tournament';
 
 export type Phase = 'draft' | 'review' | 'tournament' | 'result';
@@ -65,10 +66,10 @@ class GameStore {
 		this.save();
 	}
 
-	/** Troca as funções entre dois jogadores na revisão do time. */
-	swap(slotA: Role, slotB: Role) {
+	/** Reatribui manualmente a função de um jogador na revisão (qualquer das 5). */
+	setSlot(nick: string, role: Role) {
 		if (!this.draft) return;
-		this.draft = { ...this.draft, picks: swapSlots(this.draft.picks, slotA, slotB) };
+		this.draft = { ...this.draft, picks: draftSetSlot(this.draft.picks, nick, role) };
 		this.save();
 	}
 
@@ -111,7 +112,9 @@ class GameStore {
 			id: 'user',
 			name: 'Seu Time',
 			strength: this.userStrength,
-			isUser: true
+			isUser: true,
+			// Elenco com rating efetivo (com penalidades) — base das stats do box score.
+			players: this.draft.picks.map((p) => ({ nick: p.nick, rating: effectiveRating(p) }))
 		};
 		this.tournament = simulateTournament(user, opponents, rng);
 	}

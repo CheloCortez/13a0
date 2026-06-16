@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import type { Major } from '$lib/data/types';
-import { DRAFT_ORDER, REROLLS, createDraft, isComplete, pick, reroll, swapSlots } from './draft';
+import type { DraftedPlayer, Major } from '$lib/data/types';
+import { REROLLS, assignSlots, createDraft, isComplete, pick, reroll, setSlot } from './draft';
 
 function makeMajors(count: number, teamsPerMajor: number): Major[] {
 	return Array.from({ length: count }, (_, m) => ({
@@ -26,9 +26,9 @@ function makeMajors(count: number, teamsPerMajor: number): Major[] {
 const majors = makeMajors(4, 6);
 
 describe('createDraft', () => {
-	test('começa na rodada do AWP com uma oferta e re-sorteios do modo', () => {
+	test('começa no primeiro pick com uma oferta e re-sorteios do modo', () => {
 		const classic = createDraft(majors, 'classic', 42);
-		expect(DRAFT_ORDER[classic.round]).toBe('awp');
+		expect(classic.round).toBe(0);
 		expect(classic.offer).not.toBeNull();
 		expect(classic.rerollsLeft).toBe(REROLLS.classic);
 		expect(createDraft(majors, 'almanac', 42).rerollsLeft).toBe(REROLLS.almanac);
@@ -42,18 +42,18 @@ describe('createDraft', () => {
 });
 
 describe('pick', () => {
-	test('escala o jogador no slot da rodada e avança', () => {
+	test('escala o jogador na função natural dele e avança', () => {
 		let state = createDraft(majors, 'classic', 1);
-		const nick = state.offer!.team.players[2].nick;
+		const nick = state.offer!.team.players[2].nick; // entry de ofício
 		state = pick(state, majors, nick);
 		expect(state.picks).toHaveLength(1);
 		expect(state.picks[0].nick).toBe(nick);
-		expect(state.picks[0].slot).toBe('awp');
+		expect(state.picks[0].slot).toBe('entry');
 		expect(state.round).toBe(1);
 		expect(state.offer).not.toBeNull();
 	});
 
-	test('cinco picks completam o draft na ordem das funções', () => {
+	test('permite repetir função: cinco AWPers completam o draft, todos de AWP', () => {
 		let state = createDraft(majors, 'classic', 2);
 		for (let i = 0; i < 5; i++) {
 			expect(isComplete(state)).toBe(false);
@@ -61,7 +61,9 @@ describe('pick', () => {
 		}
 		expect(isComplete(state)).toBe(true);
 		expect(state.offer).toBeNull();
-		expect(state.picks.map((p) => p.slot)).toEqual(DRAFT_ORDER);
+		expect(state.picks.every((p) => p.role === 'awp')).toBe(true);
+		// sem 2ª função, todos jogam de AWP (funções repetidas são permitidas)
+		expect(state.picks.every((p) => p.slot === 'awp')).toBe(true);
 	});
 
 	test('nunca oferece o mesmo time do mesmo major duas vezes na campanha', () => {
@@ -84,46 +86,62 @@ describe('pick', () => {
 	});
 });
 
-describe('swapSlots', () => {
-	function completedDraft() {
-		let state = createDraft(majors, 'classic', 6);
-		while (!isComplete(state)) {
-			state = pick(state, majors, state.offer!.team.players[0].nick);
-		}
-		return state;
+describe('assignSlots', () => {
+	function dp(
+		nick: string,
+		role: DraftedPlayer['role'],
+		rating: number,
+		role2?: DraftedPlayer['role']
+	): DraftedPlayer {
+		return {
+			nick,
+			role,
+			role2,
+			rating,
+			slot: role,
+			teamName: `Time ${nick}`,
+			majorId: 'major-x',
+			majorName: 'Major X'
+		};
 	}
 
-	test('troca as funções entre os jogadores dos dois slots', () => {
-		const state = completedDraft();
-		const awper = state.picks.find((p) => p.slot === 'awp')!;
-		const support = state.picks.find((p) => p.slot === 'support')!;
-
-		const swapped = swapSlots(state.picks, 'awp', 'support');
-
-		expect(swapped.find((p) => p.nick === awper.nick)!.slot).toBe('support');
-		expect(swapped.find((p) => p.nick === support.nick)!.slot).toBe('awp');
+	test('jogadores puros ficam na sua função natural', () => {
+		const picks = assignSlots([
+			dp('a', 'awp', 1.0),
+			dp('b', 'igl', 1.0),
+			dp('c', 'entry', 1.0),
+			dp('d', 'lurker', 1.0),
+			dp('e', 'support', 1.0)
+		]);
+		for (const p of picks) expect(p.slot).toBe(p.role);
 	});
 
-	test('preserva os demais jogadores e os dados de origem', () => {
-		const state = completedDraft();
-		const swapped = swapSlots(state.picks, 'igl', 'lurker');
-
-		expect(swapped).toHaveLength(5);
-		expect(new Set(swapped.map((p) => p.slot)).size).toBe(5);
-		for (const p of state.picks) {
-			const after = swapped.find((q) => q.nick === p.nick)!;
-			expect(after.teamName).toBe(p.teamName);
-			expect(after.rating).toBe(p.rating);
-			expect(after.role).toBe(p.role);
-		}
-		expect(swapped.find((p) => p.slot === 'entry')!.nick).toBe(
-			state.picks.find((p) => p.slot === 'entry')!.nick
-		);
+	test('funções repetidas são permitidas (dois lurkers continuam lurkers)', () => {
+		const picks = assignSlots([dp('a', 'lurker', 1.1), dp('b', 'lurker', 1.0)]);
+		expect(picks.every((p) => p.slot === 'lurker')).toBe(true);
 	});
 
-	test('trocar um slot com ele mesmo não muda nada', () => {
-		const state = completedDraft();
-		expect(swapSlots(state.picks, 'awp', 'awp')).toEqual(state.picks);
+	test('híbrido cede a função primária pra evitar conflito (FalleN awp+igl)', () => {
+		const picks = assignSlots([dp('FalleN', 'awp', 1.1, 'igl'), dp('device', 'awp', 1.2)]);
+		expect(picks.find((p) => p.nick === 'device')!.slot).toBe('awp');
+		expect(picks.find((p) => p.nick === 'FalleN')!.slot).toBe('igl');
+	});
+
+	describe('setSlot', () => {
+		test('reatribui a função de um jogador para qualquer das 5, mesmo gerando repetição', () => {
+			const picks = [dp('a', 'igl', 1.0), dp('b', 'lurker', 1.0)];
+			const moved = setSlot(picks, 'a', 'lurker'); // IGL escalado de lurker
+			expect(moved.find((p) => p.nick === 'a')!.slot).toBe('lurker');
+			expect(moved.find((p) => p.nick === 'b')!.slot).toBe('lurker'); // intocado
+			expect(moved.filter((p) => p.slot === 'lurker')).toHaveLength(2);
+		});
+
+		test('não altera os demais jogadores nem o array original', () => {
+			const picks = [dp('a', 'awp', 1.0), dp('b', 'entry', 1.0)];
+			const moved = setSlot(picks, 'b', 'support');
+			expect(moved.find((p) => p.nick === 'a')!.slot).toBe('awp');
+			expect(picks.find((p) => p.nick === 'b')!.slot).toBe('entry'); // imutável
+		});
 	});
 });
 

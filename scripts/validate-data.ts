@@ -7,8 +7,8 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROLES = ['awp', 'igl', 'entry', 'lurker', 'support'];
-const RATING_MIN = 0.85;
-const RATING_MAX = 1.35;
+const RATING_MIN = 0.8;
+const RATING_MAX = 1.45;
 
 const dataDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'static', 'data', 'majors');
 const errors: string[] = [];

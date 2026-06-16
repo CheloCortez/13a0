@@ -1,0 +1,64 @@
+{
+	"id": "berlin-2019",
+	"name": "StarLadder Berlin Major 2019",
+	"year": 2019,
+	"city": "Berlim",
+	"teams": [
+		{ "id": "astralis", "name": "Astralis", "placement": "Campeão", "players": [
+			{ "nick": "device", "role": "awp", "rating": 1.36 },
+			{ "nick": "dupreeh", "role": "entry", "rating": 1.22 },
+			{ "nick": "Xyp9x", "role": "support", "rating": 1.12 },
+			{ "nick": "gla1ve", "role": "igl", "rating": 1.12 },
+			{ "nick": "Magisk", "role": "lurker", "rating": 1.27 }
+		] },
+		{ "id": "avangar", "name": "AVANGAR", "placement": "Vice", "players": [
+			{ "nick": "Jame", "role": "awp", "rating": 1.14, "role2": "igl" },
+			{ "nick": "qikert", "role": "support", "rating": 1.16 },
+			{ "nick": "buster", "role": "entry", "rating": 1.09 },
+			{ "nick": "SANJI", "role": "lurker", "rating": 0.95 },
+			{ "nick": "AdreN", "role": "entry", "rating": 0.99 }
+		] },
+		{ "id": "renegades", "name": "Renegades", "placement": "3º-4º", "players": [
+			{ "nick": "AZR", "role": "igl", "rating": 0.91 },
+			{ "nick": "jks", "role": "lurker", "rating": 1.2 },
+			{ "nick": "jkaem", "role": "entry", "rating": 1.07 },
+			{ "nick": "Liazz", "role": "support", "rating": 1.03 },
+			{ "nick": "Gratisfaction", "role": "awp", "rating": 0.98 }
+		] },
+		{ "id": "nrg", "name": "NRG Esports", "placement": "3º-4º", "players": [
+			{ "nick": "stanislaw", "role": "igl", "rating": 1.01 },
+			{ "nick": "Brehze", "role": "entry", "rating": 1.24 },
+			{ "nick": "CeRq", "role": "awp", "rating": 1.18 },
+			{ "nick": "Ethan", "role": "lurker", "rating": 1.05 },
+			{ "nick": "tarik", "role": "support", "rating": 0.96 }
+		] },
+		{ "id": "ence", "name": "ENCE", "placement": "5º-8º", "players": [
+			{ "nick": "allu", "role": "awp", "rating": 1.03 },
+			{ "nick": "Aleksib", "role": "igl", "rating": 0.95 },
+			{ "nick": "sergej", "role": "entry", "rating": 1.12 },
+			{ "nick": "Aerial", "role": "lurker", "rating": 1.01 },
+			{ "nick": "xseveN", "role": "support", "rating": 0.94 }
+		] },
+		{ "id": "vitality", "name": "Team Vitality", "placement": "5º-8º", "players": [
+			{ "nick": "ALEX", "role": "igl", "rating": 1.01 },
+			{ "nick": "apEX", "role": "entry", "rating": 1.03 },
+			{ "nick": "ZywOo", "role": "awp", "rating": 1.39 },
+			{ "nick": "NBK-", "role": "lurker", "rating": 1.06 },
+			{ "nick": "RpK", "role": "support", "rating": 0.95 }
+		] },
+		{ "id": "navi", "name": "Natus Vincere", "placement": "5º-8º", "players": [
+			{ "nick": "Boombl4", "role": "igl", "rating": 0.88 },
+			{ "nick": "s1mple", "role": "awp", "rating": 1.45, "role2": "entry" },
+			{ "nick": "electronic", "role": "entry", "rating": 1.32 },
+			{ "nick": "flamie", "role": "lurker", "rating": 1.08 },
+			{ "nick": "Zeus", "role": "support", "rating": 0.85, "role2": "igl" }
+		] },
+		{ "id": "liquid", "name": "Team Liquid", "placement": "5º-8º", "players": [
+			{ "nick": "nitr0", "role": "igl", "rating": 1.02 },
+			{ "nick": "EliGE", "role": "entry", "rating": 1.26 },
+			{ "nick": "Twistzz", "role": "lurker", "rating": 1.23 },
+			{ "nick": "NAF", "role": "support", "rating": 1.11 },
+			{ "nick": "Stewie2K", "role": "entry", "rating": 1.09 }
+		] }
+	]
+}

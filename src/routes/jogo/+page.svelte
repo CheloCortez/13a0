@@ -1,16 +1,19 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import LiveMatch from '$lib/components/LiveMatch.svelte';
+	import MatchupPreview from '$lib/components/MatchupPreview.svelte';
+	import ModifierList from '$lib/components/ModifierList.svelte';
 	import PlayerCard from '$lib/components/PlayerCard.svelte';
+	import PlayoffBracket from '$lib/components/PlayoffBracket.svelte';
+	import RoleBoard from '$lib/components/RoleBoard.svelte';
 	import SwissBoard from '$lib/components/SwissBoard.svelte';
+	import SwissBracket from '$lib/components/SwissBracket.svelte';
 	import TeamCard from '$lib/components/TeamCard.svelte';
-	import { ROLE_LABELS, type Role } from '$lib/data/types';
 	import { DRAFT_ORDER, type GameMode } from '$lib/engine/draft';
 	import { computeAchievements, shareText } from '$lib/engine/share';
-	import { effectiveRating } from '$lib/engine/strength';
-	import type { SeriesResult } from '$lib/engine/match';
 	import { game } from '$lib/stores/game.svelte';
 	import { loadAllMajors } from '$lib/data/loader';
 
@@ -37,7 +40,10 @@
 		ready = true;
 	});
 
-	const currentRole = $derived(game.draft ? DRAFT_ORDER[game.draft.round] : 'awp');
+	/** Funções ainda sem dono no time parcial (slot = função efetiva) — guia os destaques. */
+	const vacantRoles = $derived(
+		game.draft ? DRAFT_ORDER.filter((r) => !game.draft!.picks.some((p) => p.slot === r)) : []
+	);
 	const sortedPicks = $derived(
 		game.draft
 			? [...game.draft.picks].sort(
@@ -45,64 +51,102 @@
 				)
 			: []
 	);
-	const hideRatings = $derived(game.mode === 'almanac' && game.phase === 'draft');
+	/** Almanaque: ratings, funções, colocações e modificadores ficam ocultos. */
+	const almanac = $derived(game.mode === 'almanac');
+	const hideRatings = $derived(almanac && game.phase === 'draft');
 
 	const achievements = $derived(
 		game.tournament ? computeAchievements(game.tournament.userMatches) : null
 	);
 
-	const stages = $derived.by(() => {
-		if (!game.tournament) return [];
+	const swissRoundCount = $derived(game.tournament?.swiss.rounds.length ?? 0);
+	/** Playoffs alcançados (há classificados e a suíça terminou de revelar). */
+	const playoffsReached = $derived(!!game.tournament?.playoffs && game.revealed >= swissRoundCount);
+	/** Fases de playoff já reveladas: 0 = só o chaveamento, 1 = quartas, 2 = semis, 3 = final. */
+	const playoffRevealed = $derived(Math.max(0, Math.min(3, game.revealed - swissRoundCount)));
+
+	/* ===== Partida ao vivo (round a round) das partidas do usuário ===== */
+	let liveStageIndex = $state<number | null>(null);
+	let playoffsEl = $state<HTMLElement | null>(null);
+
+	const stageLabelAt = (idx: number) =>
+		idx < swissRoundCount
+			? `Rodada ${idx + 1}`
+			: (['Quartas de final', 'Semifinal', 'Grande final'][idx - swissRoundCount] ?? '');
+
+	function userMatchAt(idx: number) {
 		const t = game.tournament;
-		const list: { title: string; matches: { aName: string; bName: string; score: string; isUser: boolean; userWon: boolean }[] }[] = [];
+		if (!t) return null;
+		if (idx < swissRoundCount) {
+			return (
+				t.swiss.rounds[idx]?.matches.find((m) => m.a.id === 'user' || m.b.id === 'user') ?? null
+			);
+		}
+		if (!t.playoffs) return null;
+		const p = idx - swissRoundCount;
+		const pool =
+			p === 0 ? t.playoffs.quarterfinals : p === 1 ? t.playoffs.semifinals : [t.playoffs.final];
+		return pool.find((m) => m.a.id === 'user' || m.b.id === 'user') ?? null;
+	}
 
-		const fmtSeries = (s: SeriesResult, bestOf: number): string => {
-			const mapScore = (m: SeriesResult['maps'][number]) =>
-				`${m.scoreA}–${m.scoreB}${m.overtime ? ' (OT)' : ''}`;
-			if (bestOf === 1) return mapScore(s.maps[0]);
-			return `${s.scoreA}–${s.scoreB} (${s.maps.map(mapScore).join(', ')})`;
+	const liveProps = $derived.by(() => {
+		if (liveStageIndex === null) return null;
+		const m = userMatchAt(liveStageIndex);
+		if (!m) return null;
+		const userIsA = m.a.id === 'user';
+		const userTeam = userIsA ? m.a : m.b;
+		const oppTeam = userIsA ? m.b : m.a;
+		const photoByNick: Record<string, string> = {};
+		for (const p of game.draft?.picks ?? []) photoByNick[p.nick.toLowerCase()] = p.majorId;
+		return {
+			seed: game.seed,
+			stageLabel: stageLabelAt(liveStageIndex),
+			user: { name: 'Seu Time', roster: userTeam.players ?? [] },
+			opp: { name: oppTeam.name, roster: oppTeam.players ?? [] },
+			oppLogoKey: oppTeam.id,
+			oppMajorId: oppTeam.id.split('/')[0],
+			userPhotoByNick: photoByNick,
+			series: m.series,
+			userIsA
 		};
-
-		for (const round of t.swiss.rounds) {
-			list.push({
-				title: `Fase suíça — Rodada ${round.number}`,
-				matches: round.matches.map((m) => ({
-					aName: m.a.name,
-					bName: m.b.name,
-					score: fmtSeries(m.series, m.bestOf),
-					isUser: m.a.id === 'user' || m.b.id === 'user',
-					userWon:
-						(m.series.winner === 'A' ? m.a.id : m.b.id) === 'user'
-				}))
-			});
-		}
-		if (t.playoffs) {
-			const bracket = [
-				{ title: 'Quartas de final', matches: t.playoffs.quarterfinals },
-				{ title: 'Semifinais', matches: t.playoffs.semifinals },
-				{ title: 'Grande final', matches: [t.playoffs.final] }
-			];
-			for (const stage of bracket) {
-				list.push({
-					title: stage.title,
-					matches: stage.matches.map((m) => ({
-						aName: m.a.name,
-						bName: m.b.name,
-						score: fmtSeries(m.series, 3),
-						isUser: m.a.id === 'user' || m.b.id === 'user',
-						userWon: (m.series.winner === 'A' ? m.a.id : m.b.id) === 'user'
-					}))
-				});
-			}
-		}
-		return list;
 	});
 
-	const swissRoundCount = $derived(game.tournament?.swiss.rounds.length ?? 0);
-	const lastSwissStage = $derived(
-		game.revealed > 0 && game.revealed <= swissRoundCount ? stages[game.revealed - 1] : null
-	);
-	const playoffStages = $derived(stages.slice(swissRoundCount, game.revealed));
+	const stageActionLabel = (idx: number) =>
+		idx < swissRoundCount
+			? `Simular a Rodada ${idx + 1}`
+			: (['Simular as quartas', 'Simular a semifinal', 'Simular a grande final'][
+					idx - swissRoundCount
+				] ?? 'Simular');
+
+	/** Confronto da próxima partida do usuário (tela de "vs" antes de simular). */
+	const nextMatchup = $derived.by(() => {
+		if (game.phase !== 'tournament') return null;
+		const m = userMatchAt(game.revealed);
+		if (!m) return null;
+		const opp = m.a.id === 'user' ? m.b : m.a;
+		return {
+			stageLabel: stageLabelAt(game.revealed),
+			actionLabel: stageActionLabel(game.revealed),
+			oppName: opp.name,
+			oppLogoKey: opp.id
+		};
+	});
+
+	/** Avança a campanha: anima a partida do usuário (se houver) antes de revelar a rodada. */
+	function advance() {
+		const idx = game.revealed;
+		if (userMatchAt(idx)) liveStageIndex = idx;
+		else game.revealNext();
+	}
+	async function finishLive() {
+		const wasPlayoff = liveStageIndex !== null && liveStageIndex >= swissRoundCount;
+		liveStageIndex = null;
+		game.revealNext();
+		if (wasPlayoff) {
+			await tick();
+			playoffsEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
+	}
 
 	function copyShare() {
 		if (!game.tournament) return;
@@ -129,31 +173,43 @@
 </svelte:head>
 
 {#if !ready}
-	<p class="muted">Carregando os Majors…</p>
+	<p class="muted loading">Carregando os Majors…</p>
 {:else if game.phase === 'draft' && game.draft?.offer}
 	{@const offer = game.draft.offer}
 	<section>
 		<header class="draft-header">
-			<h2>Rodada {game.draft.round + 1}/5 — escalando <span class="role">{ROLE_LABELS[currentRole]}</span></h2>
-			<p class="muted">
-				Modo {game.mode === 'classic' ? 'Clássico' : 'Almanaque'} · seed #{game.seed}
+			<p class="tag">Draft — pick {game.draft.round + 1} de 5</p>
+			<h2>Escolha <span class="role">um jogador</span></h2>
+			<p class="meta-line">
+				<span class="meta-chip">{game.mode === 'classic' ? 'Clássico' : 'Almanaque'}</span>
+				<span class="meta-chip seed">seed #{game.seed}</span>
 			</p>
 		</header>
 
 		<div class="offer">
-			<TeamCard title={offer.team.name} subtitle={offer.majorName} right={offer.team.placement}>
+			<TeamCard
+				title={offer.team.name}
+				subtitle={offer.majorName}
+				right={almanac ? undefined : offer.team.placement}
+				teamKey="{offer.majorId}/{offer.team.id}"
+			>
 				{#each offer.team.players as player (player.nick)}
 					<PlayerCard
 						{player}
+						majorId={offer.majorId}
 						hideRating={hideRatings}
-						highlight={player.role === currentRole || player.role2 === currentRole}
+						hideRoles={almanac}
+						highlight={!almanac &&
+							(vacantRoles.includes(player.role) ||
+								(player.role2 != null && vacantRoles.includes(player.role2)))}
 						onclick={() => game.pick(player.nick)}
 					/>
 				{/each}
 			</TeamCard>
 			<p class="hint muted">
-				Toque em um jogador para escalá-lo. Escolher fora da função aplica penalidade de 15% no
-				rating.
+				Toque em um jogador para escalá-lo — qualquer função, inclusive repetida. Os jogadores de
+				funções que faltam no seu time aparecem destacados. Dois jogadores de uma mesma função
+				reduzem a força; híbridos não geram conflito, e 3+ jogadores do mesmo time dão bônus.
 			</p>
 			<button
 				class="btn btn-ghost"
@@ -167,100 +223,101 @@
 		{#if game.draft.picks.length > 0}
 			<div class="picks">
 				<TeamCard title="Seu time até agora" subtitle="{game.draft.picks.length}/5">
-					{#each DRAFT_ORDER as role (role)}
-						{@const drafted = game.draft.picks.find((p) => p.slot === role)}
-						{#if drafted}
-							<PlayerCard player={drafted} hideRating={hideRatings} />
-						{:else}
-							<div class="empty-tile" class:next={role === currentRole}>
-								<span class="empty-portrait" aria-hidden="true">?</span>
-								<span class="badge badge-{role}">{ROLE_LABELS[role]}</span>
-							</div>
-						{/if}
+					{#each sortedPicks as p (p.nick)}
+						<PlayerCard player={p} majorId={p.majorId} hideRating={hideRatings} hideRoles={almanac} />
+					{/each}
+					{#each Array(5 - game.draft.picks.length) as _, i (i)}
+						<div class="empty-tile">
+							<span class="empty-portrait" aria-hidden="true">?</span>
+						</div>
 					{/each}
 				</TeamCard>
+				{#if !almanac}
+					<ModifierList picks={game.draft.picks} />
+				{/if}
 			</div>
 		{/if}
 	</section>
 {:else if game.phase === 'review' && game.draft}
 	<section>
-		<h2>Seu time dos sonhos</h2>
+		<p class="tag">Escalação final</p>
+		<h2>Monte o seu time</h2>
 		<p class="muted swap-hint">
-			Ajuste as funções antes de jogar: mude a função de um jogador e ele troca de lugar com quem
-			estiver nela. Fora da função natural há penalidade de 15%.
+			Arraste cada jogador para a função que quiser — qualquer combinação vale, mesmo com
+			penalidade.{#if !almanac} A força {game.userStrength.toFixed(3)} e os modificadores atualizam na hora.{/if}
 		</p>
-		<TeamCard title="Seu Time" subtitle="seed #{game.seed}" right="força {game.userStrength.toFixed(3)}">
-			{#each sortedPicks as p (p.nick)}
-				<PlayerCard player={p} hideRating>
-					{#snippet footer()}
-						<div class="slot-box">
-							<select
-								class="slot-select"
-								value={p.slot}
-								onchange={(e) => game.swap(p.slot, e.currentTarget.value as Role)}
-							>
-								{#each DRAFT_ORDER as role (role)}
-									<option value={role}>{ROLE_LABELS[role]}</option>
-								{/each}
-							</select>
-							<span class="eff-rating">
-								{effectiveRating(p).toFixed(2)}{#if effectiveRating(p) < p.rating}<span class="penalty" title="fora de função">▼</span>{/if}
-							</span>
-						</div>
-					{/snippet}
-				</PlayerCard>
-			{/each}
-		</TeamCard>
+		<RoleBoard
+			picks={game.draft.picks}
+			onMove={(nick, role) => game.setSlot(nick, role)}
+			hideRating={almanac}
+			hideRoles={almanac}
+		/>
+		{#if !almanac}
+			<ModifierList picks={game.draft.picks} />
+		{/if}
 		<button class="btn big" onclick={() => game.confirm()}>🏆 Disputar o Major</button>
 	</section>
 {:else if (game.phase === 'tournament' || game.phase === 'result') && game.tournament}
 	<section>
+		<p class="tag">Campanha</p>
 		<h2>O Major</h2>
 
-		<h3 class="phase-title">Fase suíça</h3>
-		<SwissBoard
-			swiss={game.tournament.swiss}
-			revealed={Math.min(game.revealed, swissRoundCount)}
-		/>
-
-		{#if lastSwissStage}
-			<div class="panel stage">
-				<h3>Resultados — {lastSwissStage.title}</h3>
-				{#each lastSwissStage.matches as m (m.aName + m.bName)}
-					<p class="match" class:user={m.isUser} class:won={m.isUser && m.userWon} class:lost={m.isUser && !m.userWon}>
-						<span class="teams">{m.aName} <em>vs</em> {m.bName}</span>
-						<span class="score">{m.score}</span>
-					</p>
-				{/each}
+		{#if liveStageIndex !== null && liveProps}
+			{#key liveStageIndex}
+				<LiveMatch
+					seed={liveProps.seed}
+					stageLabel={liveProps.stageLabel}
+					user={liveProps.user}
+					opp={liveProps.opp}
+					oppLogoKey={liveProps.oppLogoKey}
+					oppMajorId={liveProps.oppMajorId}
+					userPhotoByNick={liveProps.userPhotoByNick}
+					series={liveProps.series}
+					userIsA={liveProps.userIsA}
+					onDone={finishLive}
+				/>
+			{/key}
+		{:else}
+			<h3 class="phase-title">Fase suíça</h3>
+			<div class="swiss-wide">
+				<SwissBracket
+					swiss={game.tournament.swiss}
+					revealed={Math.min(game.revealed, swissRoundCount)}
+				/>
 			</div>
-		{/if}
-
-		{#if playoffStages.length > 0}
-			<h3 class="phase-title">Playoffs</h3>
-		{/if}
-		{#each playoffStages as stage (stage.title)}
-			<div class="panel stage">
-				<h3>{stage.title}</h3>
-				{#each stage.matches as m (m.aName + m.bName)}
-					<p class="match" class:user={m.isUser} class:won={m.isUser && m.userWon} class:lost={m.isUser && !m.userWon}>
-						<span class="teams">{m.aName} <em>vs</em> {m.bName}</span>
-						<span class="score">{m.score}</span>
-					</p>
-				{/each}
+			<div class="swiss-narrow">
+				<SwissBoard
+					swiss={game.tournament.swiss}
+					revealed={Math.min(game.revealed, swissRoundCount)}
+				/>
 			</div>
-		{/each}
 
-		{#if game.phase === 'tournament'}
-			<button class="btn big" onclick={() => game.revealNext()}>
-				{#if game.revealed === 0}▶ Simular Rodada 1{:else if game.revealed < swissRoundCount}▶ Simular Rodada {game.revealed + 1}{:else if game.revealed === swissRoundCount}▶ Começar os playoffs{:else}▶ Próxima fase{/if}
-			</button>
-		{:else if achievements}
+			{#if playoffsReached && game.tournament.playoffs}
+				<h3 class="phase-title" bind:this={playoffsEl}>Playoffs</h3>
+				<PlayoffBracket playoffs={game.tournament.playoffs} revealed={playoffRevealed} />
+			{/if}
+
+			{#if game.phase === 'tournament'}
+				{#if nextMatchup}
+					<MatchupPreview
+						stageLabel={nextMatchup.stageLabel}
+						oppName={nextMatchup.oppName}
+						oppLogoKey={nextMatchup.oppLogoKey}
+						actionLabel={nextMatchup.actionLabel}
+						onSimulate={advance}
+					/>
+				{:else}
+					<button class="btn big" onclick={advance}>
+						{#if game.revealed < swissRoundCount}▶ Revelar a Rodada {game.revealed + 1}{:else if game.revealed === swissRoundCount}▶ Começar os playoffs{:else}▶ Revelar a próxima fase{/if}
+					</button>
+				{/if}
+			{:else if achievements}
 			{@const finish = game.tournament.userFinish}
 			<div class="panel result" class:champion={finish === 'campeão'}>
 				<h3>
 					{#if finish === 'campeão'}🏆 CAMPEÃO DO MAJOR!{:else if finish === 'vice'}🥈 Vice-campeão{:else if finish === 'semi'}🥉 Caiu na semifinal{:else if finish === 'quartas'}Caiu nas quartas{:else}Eliminado na fase suíça{/if}
 				</h3>
-				{#if achievements.perfectMap}<p>💎 <strong>Mapa perfeito: 13 a 0!</strong></p>{/if}
+				{#if achievements.perfectMap}<p class="perfect">💎 <strong>Mapa perfeito: 13 a 0!</strong></p>{/if}
 				{#if achievements.unbeaten && finish === 'campeão'}<p>🔥 Campanha invicta!</p>{/if}
 				<p class="grid-line">
 					{#each game.tournament.userMatches as m (m.stage)}{m.userWon ? '🟩' : '🟥'}{/each}
@@ -273,29 +330,75 @@
 				<button class="btn btn-ghost" onclick={() => playAgain('classic')}>Jogar de novo — Clássico</button>
 				<button class="btn btn-ghost" onclick={() => playAgain('almanac')}>Jogar de novo — Almanaque</button>
 			</div>
+			{/if}
 		{/if}
 	</section>
 {/if}
 
 <style>
+	.loading {
+		padding-top: 2rem;
+		text-align: center;
+	}
+
 	h2 {
-		margin: 1rem 0 0.2rem;
+		margin: 0.2rem 0 0.3rem;
+		font-size: 1.5rem;
+	}
+
+	section > .tag,
+	.draft-header .tag {
+		margin: 1.1rem 0 0;
 	}
 
 	.role {
 		color: var(--accent);
 	}
 
+	.draft-header h2 {
+		margin-bottom: 0.4rem;
+	}
+
+	.meta-line {
+		display: flex;
+		gap: 0.4rem;
+		margin: 0;
+	}
+
+	.meta-chip {
+		font-family: var(--font-display);
+		font-size: 0.72rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--muted);
+		background: var(--panel-2);
+		box-shadow: inset 0 0 0 1px var(--border);
+		padding: 0.14rem 0.5rem;
+	}
+
+	.meta-chip.seed {
+		font-variant-numeric: tabular-nums;
+	}
+
 	.offer {
 		margin-top: 1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+
+	.offer .btn-ghost {
+		align-self: flex-start;
 	}
 
 	.hint {
 		font-size: 0.8rem;
+		margin: 0;
 	}
 
 	.picks {
-		margin-top: 1rem;
+		margin-top: 1.2rem;
 	}
 
 	.empty-tile {
@@ -312,146 +415,119 @@
 		justify-content: center;
 		width: 100%;
 		aspect-ratio: 4 / 5;
-		border: 1px dashed var(--border);
-		border-radius: 8px;
+		border: 1px dashed var(--border-strong);
 		color: var(--muted);
-		font-size: 1.6rem;
-		font-weight: 800;
+		font-family: var(--font-display);
+		font-size: 1.7rem;
+		font-weight: 700;
 		background: color-mix(in srgb, var(--panel-2) 55%, transparent);
-	}
-
-	.empty-tile.next .empty-portrait {
-		border-color: var(--accent);
-		color: var(--accent);
-	}
-
-	.empty-tile .badge {
-		font-size: 0.62rem;
-		padding: 0.08rem 0.4rem;
+		clip-path: polygon(var(--cut-sm) 0, 100% 0, 100% calc(100% - var(--cut-sm)), calc(100% - var(--cut-sm)) 100%, 0 100%, 0 var(--cut-sm));
 	}
 
 	.swap-hint {
 		font-size: 0.85rem;
-		margin: 0.2rem 0 0.8rem;
-	}
-
-	.slot-box {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.2rem;
-		width: 100%;
-	}
-
-	.slot-select {
-		font: inherit;
-		font-size: 0.68rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.03em;
-		background: var(--panel-2);
-		color: var(--accent);
-		border: 1px solid var(--border);
-		border-radius: 8px;
-		padding: 0.22rem 0.2rem;
-		cursor: pointer;
-		max-width: 100%;
-	}
-
-	.slot-select:hover {
-		border-color: var(--accent);
-	}
-
-	.eff-rating {
-		font-weight: 700;
-		font-size: 0.8rem;
-		color: var(--accent);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.penalty {
-		color: var(--loss);
-		font-size: 0.75rem;
+		margin: 0.2rem 0 0.9rem;
 	}
 
 	.big {
 		width: 100%;
-		margin-top: 1rem;
+		margin-top: 1.1rem;
 		padding: 1rem;
-		font-size: 1.05rem;
+		font-size: 1.1rem;
 	}
 
 	.phase-title {
-		margin: 1.2rem 0 0;
-		font-size: 1rem;
+		margin: 1.4rem 0 0;
+		font-size: 0.85rem;
 		color: var(--muted);
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-	}
-
-	.stage {
-		margin-top: 1rem;
-	}
-
-	.stage h3 {
-		margin: 0 0 0.6rem;
-		font-size: 0.95rem;
-		color: var(--muted);
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-	}
-
-	.match {
+		letter-spacing: 0.14em;
 		display: flex;
-		justify-content: space-between;
-		gap: 0.7rem;
-		margin: 0.35rem 0;
-		font-size: 0.88rem;
-		padding: 0.3rem 0.5rem;
-		border-radius: 6px;
+		align-items: center;
+		gap: 0.6rem;
 	}
 
-	.match em {
-		color: var(--muted);
-		font-style: normal;
-		font-size: 0.78rem;
+	.phase-title::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: linear-gradient(90deg, var(--border-strong), transparent);
 	}
 
-	.match .score {
-		font-variant-numeric: tabular-nums;
-		white-space: nowrap;
-		color: var(--muted);
+	/* ===== Fase suíça: bracket no desktop, quadro vertical no celular ===== */
+	/* O bracket "estoura" o cap de 700px do main, centralizado sobre o viewport. */
+	.swiss-wide {
+		width: min(96vw, 1040px);
+		margin-left: calc((100% - min(96vw, 1040px)) / 2);
 	}
 
-	.match.user {
-		font-weight: 700;
-		background: var(--panel-2);
+	.swiss-narrow {
+		display: none;
 	}
 
-	.match.won {
-		border-left: 3px solid var(--win);
+	@media (max-width: 820px) {
+		.swiss-wide {
+			display: none;
+		}
+		.swiss-narrow {
+			display: block;
+		}
 	}
 
-	.match.lost {
-		border-left: 3px solid var(--loss);
-	}
-
+	/* ===== Resultado final ===== */
 	.result {
-		margin-top: 1.2rem;
+		margin-top: 1.3rem;
 		text-align: center;
+		padding: 1.4rem 1rem;
 	}
 
 	.result.champion {
-		border-color: var(--accent);
+		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+		border-top-color: var(--accent);
+		background:
+			radial-gradient(30rem 12rem at 50% -4rem, rgba(246, 168, 33, 0.16), transparent 70%),
+			linear-gradient(180deg, var(--panel-2), var(--panel));
+		position: relative;
+		overflow: hidden;
+	}
+
+	/* Brilho varrendo o painel de campeão */
+	.result.champion::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(115deg, transparent 35%, rgba(255, 210, 120, 0.1) 50%, transparent 65%);
+		background-size: 250% 100%;
+		animation: shine 3.2s ease-in-out infinite;
+		pointer-events: none;
+	}
+
+	@keyframes shine {
+		from {
+			background-position: 120% 0;
+		}
+		to {
+			background-position: -120% 0;
+		}
 	}
 
 	.result h3 {
-		margin-top: 0;
+		margin: 0 0 0.6rem;
+		font-size: 1.3rem;
+		letter-spacing: 0.06em;
+	}
+
+	.result.champion h3 {
+		color: var(--accent-bright);
+		text-shadow: 0 0 22px rgba(246, 168, 33, 0.45);
+	}
+
+	.perfect {
+		color: var(--awp);
 	}
 
 	.grid-line {
 		font-size: 1.3rem;
-		letter-spacing: 0.1em;
+		letter-spacing: 0.12em;
 	}
 
 	.again {
@@ -462,5 +538,21 @@
 
 	.again .btn-ghost {
 		flex: 1;
+	}
+
+	@media (max-width: 440px) {
+		.again {
+			flex-direction: column;
+		}
+
+		.offer .btn-ghost {
+			align-self: stretch;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.result.champion::after {
+			animation: none;
+		}
 	}
 </style>

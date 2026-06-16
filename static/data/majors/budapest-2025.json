@@ -1,0 +1,64 @@
+{
+	"id": "budapest-2025",
+	"name": "StarLadder Budapest Major 2025",
+	"year": 2025,
+	"city": "Budapeste",
+	"teams": [
+		{ "id": "vitality", "name": "Team Vitality", "placement": "Campeão", "players": [
+			{ "nick": "apEX", "role": "igl", "rating": 1 },
+			{ "nick": "ZywOo", "role": "awp", "rating": 1.45 },
+			{ "nick": "flameZ", "role": "entry", "rating": 1.31 },
+			{ "nick": "ropz", "role": "lurker", "rating": 1.35 },
+			{ "nick": "mezii", "role": "support", "rating": 1.09 }
+		] },
+		{ "id": "faze", "name": "FaZe Clan", "placement": "Vice", "players": [
+			{ "nick": "karrigan", "role": "igl", "rating": 0.95 },
+			{ "nick": "broky", "role": "awp", "rating": 1.17 },
+			{ "nick": "rain", "role": "entry", "rating": 1.1 },
+			{ "nick": "frozen", "role": "entry", "rating": 1.17 },
+			{ "nick": "jcobbb", "role": "lurker", "rating": 1.02 }
+		] },
+		{ "id": "spirit", "name": "Team Spirit", "placement": "3º-4º", "players": [
+			{ "nick": "chopper", "role": "igl", "rating": 0.88 },
+			{ "nick": "sh1ro", "role": "awp", "rating": 1.27 },
+			{ "nick": "donk", "role": "entry", "rating": 1.4 },
+			{ "nick": "zont1x", "role": "lurker", "rating": 1.15 },
+			{ "nick": "zweih", "role": "support", "rating": 1 }
+		] },
+		{ "id": "navi", "name": "Natus Vincere", "placement": "3º-4º", "players": [
+			{ "nick": "Aleksib", "role": "igl", "rating": 0.93 },
+			{ "nick": "w0nderful", "role": "awp", "rating": 1.23 },
+			{ "nick": "b1t", "role": "entry", "rating": 1.17 },
+			{ "nick": "iM", "role": "lurker", "rating": 1.16 },
+			{ "nick": "makazze", "role": "support", "rating": 1.09 }
+		] },
+		{ "id": "falcons", "name": "Team Falcons", "placement": "5º-8º", "players": [
+			{ "nick": "kyxsan", "role": "igl", "rating": 0.98 },
+			{ "nick": "m0NESY", "role": "awp", "rating": 1.31 },
+			{ "nick": "NiKo", "role": "entry", "rating": 1.28 },
+			{ "nick": "TeSeS", "role": "lurker", "rating": 1.03 },
+			{ "nick": "kyousuke", "role": "support", "rating": 1 }
+		] },
+		{ "id": "mongolz", "name": "The MongolZ", "placement": "5º-8º", "players": [
+			{ "nick": "bLitz", "role": "igl", "rating": 0.97 },
+			{ "nick": "910", "role": "awp", "rating": 1.08 },
+			{ "nick": "Techno4K", "role": "entry", "rating": 1.09 },
+			{ "nick": "mzinho", "role": "lurker", "rating": 1.25 },
+			{ "nick": "Senzu", "role": "support", "rating": 1.09 }
+		] },
+		{ "id": "mouz", "name": "MOUZ", "placement": "5º-8º", "players": [
+			{ "nick": "Brollan", "role": "igl", "rating": 1.03 },
+			{ "nick": "torzsi", "role": "awp", "rating": 1.13 },
+			{ "nick": "xertioN", "role": "entry", "rating": 1.15 },
+			{ "nick": "Jimpphat", "role": "lurker", "rating": 1.16 },
+			{ "nick": "Spinx", "role": "support", "rating": 1.13 }
+		] },
+		{ "id": "furia", "name": "FURIA", "placement": "5º-8º", "players": [
+			{ "nick": "FalleN", "role": "igl", "rating": 0.95, "role2": "awp" },
+			{ "nick": "molodoy", "role": "awp", "rating": 1.04 },
+			{ "nick": "yuurih", "role": "entry", "rating": 1.09 },
+			{ "nick": "KSCERATO", "role": "lurker", "rating": 1.17 },
+			{ "nick": "YEKINDAR", "role": "entry", "rating": 1.11 }
+		] }
+	]
+}

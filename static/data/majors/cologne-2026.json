@@ -1,0 +1,64 @@
+{
+	"id": "cologne-2026",
+	"name": "IEM Cologne Major 2026",
+	"year": 2026,
+	"city": "Colônia",
+	"teams": [
+		{ "id": "spirit", "name": "Team Spirit", "placement": "Playoffs", "players": [
+			{ "nick": "magixx", "role": "igl", "rating": 1.06 },
+			{ "nick": "sh1ro", "role": "awp", "rating": 1.24 },
+			{ "nick": "donk", "role": "entry", "rating": 1.4 },
+			{ "nick": "zont1x", "role": "lurker", "rating": 1.14 },
+			{ "nick": "tN1R", "role": "support", "rating": 1.0 }
+		] },
+		{ "id": "furia", "name": "FURIA", "placement": "Playoffs", "players": [
+			{ "nick": "FalleN", "role": "igl", "role2": "awp", "rating": 1.05 },
+			{ "nick": "molodoy", "role": "awp", "rating": 1.08 },
+			{ "nick": "yuurih", "role": "entry", "rating": 1.16 },
+			{ "nick": "KSCERATO", "role": "lurker", "rating": 1.18 },
+			{ "nick": "YEKINDAR", "role": "entry", "rating": 1.12 }
+		] },
+		{ "id": "vitality", "name": "Team Vitality", "placement": "Playoffs", "players": [
+			{ "nick": "apEX", "role": "igl", "rating": 1.03 },
+			{ "nick": "ZywOo", "role": "awp", "rating": 1.42 },
+			{ "nick": "flameZ", "role": "entry", "rating": 1.22 },
+			{ "nick": "mezii", "role": "support", "rating": 1.08 },
+			{ "nick": "ropz", "role": "lurker", "rating": 1.2 }
+		] },
+		{ "id": "aurora", "name": "Aurora", "placement": "Playoffs", "players": [
+			{ "nick": "MAJ3R", "role": "igl", "rating": 0.96 },
+			{ "nick": "woxic", "role": "awp", "rating": 1.16 },
+			{ "nick": "XANTARES", "role": "entry", "rating": 1.18 },
+			{ "nick": "Wicadia", "role": "lurker", "rating": 1.06 },
+			{ "nick": "soulfly", "role": "support", "rating": 1.02 }
+		] },
+		{ "id": "falcons", "name": "Team Falcons", "placement": "Playoffs", "players": [
+			{ "nick": "kyxsan", "role": "igl", "rating": 1.0 },
+			{ "nick": "m0NESY", "role": "awp", "rating": 1.3 },
+			{ "nick": "NiKo", "role": "entry", "rating": 1.24 },
+			{ "nick": "TeSeS", "role": "entry", "rating": 1.12 },
+			{ "nick": "kyousuke", "role": "support", "rating": 1.04 }
+		] },
+		{ "id": "g2", "name": "G2 Esports", "placement": "Playoffs", "players": [
+			{ "nick": "huNter-", "role": "igl", "rating": 1.1 },
+			{ "nick": "SunPayus", "role": "awp", "rating": 1.12 },
+			{ "nick": "matys", "role": "entry", "rating": 1.14 },
+			{ "nick": "HeavyGod", "role": "lurker", "rating": 1.02 },
+			{ "nick": "NertZ", "role": "support", "rating": 1.04 }
+		] },
+		{ "id": "betboom", "name": "BetBoom", "placement": "Playoffs", "players": [
+			{ "nick": "Boombl4", "role": "igl", "rating": 1.04 },
+			{ "nick": "FL4MUS", "role": "awp", "rating": 1.06 },
+			{ "nick": "zorte", "role": "entry", "rating": 1.06 },
+			{ "nick": "s1ren", "role": "lurker", "rating": 1.02 },
+			{ "nick": "Magnojez", "role": "support", "rating": 1.0 }
+		] },
+		{ "id": "9z", "name": "9z", "placement": "Playoffs", "players": [
+			{ "nick": "max", "role": "igl", "rating": 0.94 },
+			{ "nick": "luchov", "role": "awp", "rating": 1.04 },
+			{ "nick": "meyern", "role": "entry", "rating": 1.16 },
+			{ "nick": "HUASOPEEK", "role": "lurker", "rating": 1.0 },
+			{ "nick": "dgt", "role": "support", "rating": 0.96 }
+		] }
+	]
+}

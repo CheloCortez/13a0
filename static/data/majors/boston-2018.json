@@ -1,0 +1,64 @@
+{
+	"id": "boston-2018",
+	"name": "ELEAGUE Major Boston 2018",
+	"year": 2018,
+	"city": "Boston",
+	"teams": [
+		{ "id": "cloud9", "name": "Cloud9", "placement": "Campeão", "players": [
+			{ "nick": "tarik", "role": "igl", "rating": 1.07 },
+			{ "nick": "Stewie2K", "role": "entry", "rating": 1.15 },
+			{ "nick": "autimatic", "role": "lurker", "rating": 1.26 },
+			{ "nick": "Skadoodle", "role": "awp", "rating": 1.15 },
+			{ "nick": "RUSH", "role": "support", "rating": 1.08 }
+		] },
+		{ "id": "faze", "name": "FaZe Clan", "placement": "Vice", "players": [
+			{ "nick": "rain", "role": "entry", "rating": 1.2 },
+			{ "nick": "karrigan", "role": "igl", "rating": 0.98 },
+			{ "nick": "NiKo", "role": "lurker", "rating": 1.35, "role2": "entry" },
+			{ "nick": "GuardiaN", "role": "awp", "rating": 1.22 },
+			{ "nick": "olofmeister", "role": "support", "rating": 1.12 }
+		] },
+		{ "id": "navi", "name": "Natus Vincere", "placement": "3º-4º", "players": [
+			{ "nick": "Edward", "role": "support", "rating": 1.01 },
+			{ "nick": "flamie", "role": "entry", "rating": 1.18 },
+			{ "nick": "s1mple", "role": "awp", "rating": 1.45, "role2": "entry" },
+			{ "nick": "Zeus", "role": "igl", "rating": 1.02 },
+			{ "nick": "electronic", "role": "lurker", "rating": 1.24 }
+		] },
+		{ "id": "sk", "name": "SK Gaming", "placement": "3º-4º", "players": [
+			{ "nick": "FalleN", "role": "awp", "rating": 1.29, "role2": "igl" },
+			{ "nick": "fer", "role": "entry", "rating": 1.18 },
+			{ "nick": "coldzera", "role": "lurker", "rating": 1.31 },
+			{ "nick": "TACO", "role": "support", "rating": 0.87 },
+			{ "nick": "boltz", "role": "entry", "rating": 1.06 }
+		] },
+		{ "id": "mouz", "name": "mousesports", "placement": "5º-8º", "players": [
+			{ "nick": "chrisJ", "role": "igl", "rating": 1.02, "role2": "awp" },
+			{ "nick": "oskar", "role": "awp", "rating": 1.17 },
+			{ "nick": "ropz", "role": "lurker", "rating": 1.15 },
+			{ "nick": "suNny", "role": "entry", "rating": 1.2 },
+			{ "nick": "STYKO", "role": "support", "rating": 0.93 }
+		] },
+		{ "id": "qbf", "name": "Quantum Bellator Fire", "placement": "5º-8º", "players": [
+			{ "nick": "Boombl4", "role": "igl", "rating": 1.02 },
+			{ "nick": "waterfaLLZ", "role": "entry", "rating": 0.93 },
+			{ "nick": "jmqa", "role": "lurker", "rating": 0.91 },
+			{ "nick": "Kvik", "role": "awp", "rating": 0.99 },
+			{ "nick": "balblna", "role": "support", "rating": 0.82 }
+		] },
+		{ "id": "g2", "name": "G2 Esports", "placement": "5º-8º", "players": [
+			{ "nick": "shox", "role": "igl", "rating": 1.15, "role2": "lurker" },
+			{ "nick": "bodyy", "role": "support", "rating": 0.92 },
+			{ "nick": "NBK-", "role": "lurker", "rating": 1.05 },
+			{ "nick": "kennyS", "role": "awp", "rating": 1.19 },
+			{ "nick": "apEX", "role": "entry", "rating": 1.05 }
+		] },
+		{ "id": "fnatic", "name": "Fnatic", "placement": "5º-8º", "players": [
+			{ "nick": "KRIMZ", "role": "support", "rating": 1.14 },
+			{ "nick": "JW", "role": "awp", "rating": 1.14 },
+			{ "nick": "flusha", "role": "lurker", "rating": 1.15 },
+			{ "nick": "Golden", "role": "igl", "rating": 0.88 },
+			{ "nick": "Lekr0", "role": "entry", "rating": 1.02 }
+		] }
+	]
+}

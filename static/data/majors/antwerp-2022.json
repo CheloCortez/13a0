@@ -5,116 +5,60 @@
 	"city": "Antuérpia",
 	"teams": [
 		{ "id": "faze", "name": "FaZe Clan", "placement": "Campeão", "players": [
-			{ "nick": "karrigan", "role": "igl", "rating": 1.05 },
-			{ "nick": "broky", "role": "awp", "rating": 1.15 },
-			{ "nick": "Twistzz", "role": "lurker", "rating": 1.2 },
-			{ "nick": "rain", "role": "entry", "rating": 1.2 },
-			{ "nick": "ropz", "role": "support", "rating": 1.2 }
+			{ "nick": "karrigan", "role": "igl", "rating": 1.08 },
+			{ "nick": "broky", "role": "awp", "rating": 1.23 },
+			{ "nick": "Twistzz", "role": "lurker", "rating": 1.29 },
+			{ "nick": "rain", "role": "entry", "rating": 1.28 },
+			{ "nick": "ropz", "role": "support", "rating": 1.28 }
 		] },
 		{ "id": "navi", "name": "Natus Vincere", "placement": "Vice", "players": [
-			{ "nick": "s1mple", "role": "awp", "rating": 1.3 },
-			{ "nick": "electronic", "role": "entry", "rating": 1.15 },
+			{ "nick": "s1mple", "role": "awp", "rating": 1.45 },
+			{ "nick": "electronic", "role": "entry", "rating": 1.23 },
 			{ "nick": "b1t", "role": "lurker", "rating": 1.1 },
-			{ "nick": "Boombl4", "role": "igl", "rating": 1.0 },
-			{ "nick": "Perfecto", "role": "support", "rating": 1.0 }
+			{ "nick": "Boombl4", "role": "igl", "rating": 1.01 },
+			{ "nick": "Perfecto", "role": "support", "rating": 0.98 }
 		] },
 		{ "id": "heroic", "name": "Heroic", "placement": "3º-4º", "players": [
-			{ "nick": "cadiaN", "role": "igl", "rating": 1.1, "role2": "awp" },
-			{ "nick": "stavn", "role": "lurker", "rating": 1.15 },
-			{ "nick": "TeSeS", "role": "entry", "rating": 1.1 },
-			{ "nick": "refrezh", "role": "entry", "rating": 1.0 },
-			{ "nick": "sjuush", "role": "support", "rating": 1.0 }
+			{ "nick": "cadiaN", "role": "igl", "rating": 1.09, "role2": "awp" },
+			{ "nick": "stavn", "role": "lurker", "rating": 1.21 },
+			{ "nick": "TeSeS", "role": "entry", "rating": 1.18 },
+			{ "nick": "refrezh", "role": "entry", "rating": 0.97 },
+			{ "nick": "sjuush", "role": "support", "rating": 1.01 }
 		] },
 		{ "id": "ence", "name": "ENCE", "placement": "3º-4º", "players": [
-			{ "nick": "Snappi", "role": "igl", "rating": 1.0 },
-			{ "nick": "Spinx", "role": "lurker", "rating": 1.15 },
+			{ "nick": "Snappi", "role": "igl", "rating": 1 },
+			{ "nick": "Spinx", "role": "lurker", "rating": 1.26 },
 			{ "nick": "dycha", "role": "entry", "rating": 1.1 },
-			{ "nick": "hades", "role": "awp", "rating": 1.05 },
-			{ "nick": "maden", "role": "support", "rating": 1.0 }
+			{ "nick": "hades", "role": "awp", "rating": 1.1 },
+			{ "nick": "maden", "role": "support", "rating": 0.97 }
 		] },
 		{ "id": "spirit", "name": "Team Spirit", "placement": "5º-8º", "players": [
-			{ "nick": "chopper", "role": "igl", "rating": 0.95 },
-			{ "nick": "degster", "role": "awp", "rating": 1.2 },
-			{ "nick": "Patsi", "role": "entry", "rating": 1.1 },
-			{ "nick": "magixx", "role": "support", "rating": 1.0 },
-			{ "nick": "s1ren", "role": "lurker", "rating": 1.0 }
+			{ "nick": "chopper", "role": "igl", "rating": 0.93 },
+			{ "nick": "degster", "role": "awp", "rating": 1.23 },
+			{ "nick": "Patsi", "role": "entry", "rating": 1.15 },
+			{ "nick": "magixx", "role": "support", "rating": 0.95 },
+			{ "nick": "s1ren", "role": "lurker", "rating": 0.99 }
 		] },
 		{ "id": "furia", "name": "FURIA", "placement": "5º-8º", "players": [
-			{ "nick": "arT", "role": "igl", "rating": 1.0, "role2": "awp" },
-			{ "nick": "KSCERATO", "role": "lurker", "rating": 1.2 },
-			{ "nick": "yuurih", "role": "entry", "rating": 1.15 },
-			{ "nick": "drop", "role": "support", "rating": 0.95 },
-			{ "nick": "saffee", "role": "awp", "rating": 1.05 }
+			{ "nick": "arT", "role": "igl", "rating": 1.02, "role2": "awp" },
+			{ "nick": "KSCERATO", "role": "lurker", "rating": 1.23 },
+			{ "nick": "yuurih", "role": "entry", "rating": 1.2 },
+			{ "nick": "drop", "role": "support", "rating": 0.93 },
+			{ "nick": "saffee", "role": "awp", "rating": 1.03 }
 		] },
 		{ "id": "nip", "name": "Ninjas in Pyjamas", "placement": "5º-8º", "players": [
-			{ "nick": "REZ", "role": "entry", "rating": 1.1 },
-			{ "nick": "Brollan", "role": "lurker", "rating": 1.1 },
-			{ "nick": "hampus", "role": "igl", "rating": 1.0 },
-			{ "nick": "Plopski", "role": "support", "rating": 0.95 },
-			{ "nick": "es3tag", "role": "awp", "rating": 1.0 }
+			{ "nick": "REZ", "role": "entry", "rating": 1.11 },
+			{ "nick": "Brollan", "role": "lurker", "rating": 1.17 },
+			{ "nick": "hampus", "role": "igl", "rating": 0.93 },
+			{ "nick": "Plopski", "role": "support", "rating": 0.86 },
+			{ "nick": "es3tag", "role": "awp", "rating": 0.97 }
 		] },
 		{ "id": "cph-flames", "name": "Copenhagen Flames", "placement": "5º-8º", "players": [
-			{ "nick": "HooXi", "role": "igl", "rating": 0.95 },
-			{ "nick": "nicoodoz", "role": "awp", "rating": 1.05 },
-			{ "nick": "roeJ", "role": "lurker", "rating": 1.1 },
-			{ "nick": "jabbi", "role": "entry", "rating": 1.1 },
-			{ "nick": "Zyphon", "role": "support", "rating": 1.0 }
-		] },
-		{ "id": "g2", "name": "G2 Esports", "placement": "9º-11º", "players": [
-			{ "nick": "NiKo", "role": "entry", "rating": 1.25 },
-			{ "nick": "m0NESY", "role": "awp", "rating": 1.2 },
-			{ "nick": "huNter-", "role": "lurker", "rating": 1.1 },
-			{ "nick": "Aleksib", "role": "igl", "rating": 0.95 },
-			{ "nick": "JaCkz", "role": "support", "rating": 0.95 }
-		] },
-		{ "id": "big", "name": "BIG", "placement": "9º-11º", "players": [
-			{ "nick": "tabseN", "role": "igl", "rating": 1.1 },
-			{ "nick": "syrsoN", "role": "awp", "rating": 1.1 },
-			{ "nick": "tiziaN", "role": "support", "rating": 0.95 },
-			{ "nick": "faveN", "role": "entry", "rating": 1.05 },
-			{ "nick": "Krimbo", "role": "lurker", "rating": 1.1 }
-		] },
-		{ "id": "vitality", "name": "Team Vitality", "placement": "9º-11º", "players": [
-			{ "nick": "ZywOo", "role": "awp", "rating": 1.3 },
-			{ "nick": "apEX", "role": "igl", "rating": 1.0 },
-			{ "nick": "dupreeh", "role": "entry", "rating": 1.05 },
-			{ "nick": "Magisk", "role": "lurker", "rating": 1.05 },
-			{ "nick": "misutaaa", "role": "support", "rating": 0.9 }
-		] },
-		{ "id": "imperial", "name": "Imperial", "placement": "12º-14º", "players": [
-			{ "nick": "FalleN", "role": "awp", "rating": 1.05, "role2": "igl" },
-			{ "nick": "fer", "role": "entry", "rating": 1.0 },
-			{ "nick": "boltz", "role": "lurker", "rating": 1.05 },
-			{ "nick": "fnx", "role": "support", "rating": 0.9 },
-			{ "nick": "VINI", "role": "support", "rating": 1.0 }
-		] },
-		{ "id": "cloud9", "name": "Cloud9", "placement": "12º-14º", "players": [
-			{ "nick": "nafany", "role": "igl", "rating": 1.0 },
-			{ "nick": "sh1ro", "role": "awp", "rating": 1.25 },
-			{ "nick": "Ax1Le", "role": "lurker", "rating": 1.2 },
-			{ "nick": "HObbit", "role": "support", "rating": 1.1 },
-			{ "nick": "interz", "role": "entry", "rating": 0.95 }
-		] },
-		{ "id": "outsiders", "name": "Outsiders", "placement": "12º-14º", "players": [
-			{ "nick": "Jame", "role": "awp", "rating": 1.15, "role2": "igl" },
-			{ "nick": "qikert", "role": "support", "rating": 1.05 },
-			{ "nick": "buster", "role": "lurker", "rating": 1.0 },
-			{ "nick": "fame", "role": "entry", "rating": 1.05 },
-			{ "nick": "FL1T", "role": "entry", "rating": 1.1 }
-		] },
-		{ "id": "bne", "name": "Bad News Eagles", "placement": "15º-16º", "players": [
-			{ "nick": "juanflatroo", "role": "lurker", "rating": 1.05 },
-			{ "nick": "sinnopsyy", "role": "igl", "rating": 1.0 },
-			{ "nick": "rigoN", "role": "awp", "rating": 1.05 },
-			{ "nick": "gxx-", "role": "support", "rating": 0.95 },
-			{ "nick": "SENER1", "role": "entry", "rating": 1.0 }
-		] },
-		{ "id": "liquid", "name": "Team Liquid", "placement": "15º-16º", "players": [
-			{ "nick": "nitr0", "role": "igl", "rating": 0.95 },
-			{ "nick": "oSee", "role": "awp", "rating": 1.05 },
-			{ "nick": "EliGE", "role": "entry", "rating": 1.1 },
-			{ "nick": "NAF", "role": "lurker", "rating": 1.1 },
-			{ "nick": "shox", "role": "support", "rating": 0.95 }
+			{ "nick": "HooXi", "role": "igl", "rating": 0.87 },
+			{ "nick": "nicoodoz", "role": "awp", "rating": 1.03 },
+			{ "nick": "roeJ", "role": "lurker", "rating": 1.16 },
+			{ "nick": "jabbi", "role": "entry", "rating": 1.14 },
+			{ "nick": "Zyphon", "role": "support", "rating": 0.97 }
 		] }
 	]
 }

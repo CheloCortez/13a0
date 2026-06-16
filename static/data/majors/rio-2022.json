@@ -1,0 +1,64 @@
+{
+	"id": "rio-2022",
+	"name": "IEM Rio Major 2022",
+	"year": 2022,
+	"city": "Rio de Janeiro",
+	"teams": [
+		{ "id": "outsiders", "name": "Outsiders", "placement": "Campeão", "players": [
+			{ "nick": "Jame", "role": "awp", "rating": 1.19, "role2": "igl" },
+			{ "nick": "FL1T", "role": "entry", "rating": 1.14 },
+			{ "nick": "fame", "role": "entry", "rating": 0.97 },
+			{ "nick": "n0rb3r7", "role": "lurker", "rating": 1.05 },
+			{ "nick": "Qikert", "role": "support", "rating": 0.98 }
+		] },
+		{ "id": "heroic", "name": "Heroic", "placement": "Vice", "players": [
+			{ "nick": "cadiaN", "role": "igl", "rating": 1.04, "role2": "awp" },
+			{ "nick": "stavn", "role": "lurker", "rating": 1.23 },
+			{ "nick": "TeSeS", "role": "entry", "rating": 1.15 },
+			{ "nick": "sjuush", "role": "support", "rating": 0.95 },
+			{ "nick": "jabbi", "role": "entry", "rating": 1.04 }
+		] },
+		{ "id": "mouz", "name": "MOUZ", "placement": "3º-4º", "players": [
+			{ "nick": "dexter", "role": "igl", "rating": 0.86 },
+			{ "nick": "torzsi", "role": "awp", "rating": 1.16 },
+			{ "nick": "frozen", "role": "entry", "rating": 1.17 },
+			{ "nick": "xertioN", "role": "lurker", "rating": 1.02 },
+			{ "nick": "JDC", "role": "support", "rating": 0.99 }
+		] },
+		{ "id": "furia", "name": "FURIA", "placement": "3º-4º", "players": [
+			{ "nick": "arT", "role": "igl", "rating": 0.99, "role2": "awp" },
+			{ "nick": "KSCERATO", "role": "lurker", "rating": 1.32 },
+			{ "nick": "yuurih", "role": "entry", "rating": 1.23 },
+			{ "nick": "drop", "role": "support", "rating": 0.91 },
+			{ "nick": "saffee", "role": "awp", "rating": 1.02 }
+		] },
+		{ "id": "cloud9", "name": "Cloud9", "placement": "5º-8º", "players": [
+			{ "nick": "nafany", "role": "igl", "rating": 1.01 },
+			{ "nick": "sh1ro", "role": "awp", "rating": 1.32 },
+			{ "nick": "Ax1Le", "role": "lurker", "rating": 1.31 },
+			{ "nick": "HObbit", "role": "support", "rating": 1.14 },
+			{ "nick": "interz", "role": "entry", "rating": 0.9 }
+		] },
+		{ "id": "fnatic", "name": "Fnatic", "placement": "5º-8º", "players": [
+			{ "nick": "mezii", "role": "igl", "rating": 0.94 },
+			{ "nick": "KRIMZ", "role": "lurker", "rating": 1.07 },
+			{ "nick": "FASHR", "role": "entry", "rating": 1.02 },
+			{ "nick": "roeJ", "role": "support", "rating": 0.93 },
+			{ "nick": "nicoodoz", "role": "awp", "rating": 1.07 }
+		] },
+		{ "id": "navi", "name": "Natus Vincere", "placement": "5º-8º", "players": [
+			{ "nick": "s1mple", "role": "awp", "rating": 1.42, "role2": "entry" },
+			{ "nick": "electronic", "role": "entry", "rating": 1.17 },
+			{ "nick": "b1t", "role": "lurker", "rating": 1.15 },
+			{ "nick": "Perfecto", "role": "support", "rating": 0.98 },
+			{ "nick": "sdy", "role": "entry", "rating": 1 }
+		] },
+		{ "id": "spirit", "name": "Team Spirit", "placement": "5º-8º", "players": [
+			{ "nick": "chopper", "role": "igl", "rating": 0.88 },
+			{ "nick": "w0nderful", "role": "awp", "rating": 1.11 },
+			{ "nick": "Patsi", "role": "entry", "rating": 1.15 },
+			{ "nick": "magixx", "role": "support", "rating": 0.94 },
+			{ "nick": "s1ren", "role": "lurker", "rating": 1.01 }
+		] }
+	]
+}
