@@ -28,7 +28,11 @@ const FINISH_LABELS: Record<UserFinish, string> = {
 	campeão: '🏆 CAMPEÃO DO MAJOR'
 };
 
-const MODE_LABELS: Record<GameMode, string> = { classic: 'Clássico', almanac: 'Almanaque' };
+const MODE_LABELS: Record<GameMode, string> = {
+	classic: 'Clássico',
+	almanac: 'Almanaque',
+	hard: 'Difícil'
+};
 
 export function shareText(opts: {
 	finish: UserFinish;

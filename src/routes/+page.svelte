@@ -4,19 +4,22 @@
 	import { game } from '$lib/stores/game.svelte';
 
 	const hasSave = game.hasSavedGame;
+	const hardUnlocked = game.hardUnlocked;
 
-	let mode = $state<'classic' | 'almanac'>('classic');
+	let mode = $state<'classic' | 'almanac' | 'hard'>('classic');
 
-	const settings = $derived(
-		mode === 'classic'
-			? ['Competitivo', 'Draft de 5', 'Ratings visíveis', '3 re-sorteios']
-			: ['Almanaque', 'Draft de 5', 'Às cegas', '1 re-sorteio']
-	);
-	const blurb = $derived(
-		mode === 'classic'
-			? 'Ratings à mostra — monte o melhor time no papel.'
-			: 'Tudo oculto: ratings, funções e força. Vale o seu conhecimento da cena.'
-	);
+	const SETTINGS: Record<typeof mode, string[]> = {
+		classic: ['Competitivo', 'Draft de 5', 'Ratings visíveis', '3 re-sorteios'],
+		almanac: ['Almanaque', 'Draft de 5', 'Às cegas', '1 re-sorteio'],
+		hard: ['Difícil', 'Só campeões', 'Às cegas', '1 re-sorteio']
+	};
+	const BLURBS: Record<typeof mode, string> = {
+		classic: 'Ratings à mostra — monte o melhor time no papel.',
+		almanac: 'Tudo oculto: ratings, funções e força. Vale o seu conhecimento da cena.',
+		hard: 'Só campeões de Major no draft e como adversários, e tudo às cegas. O teste final.'
+	};
+	const settings = $derived(SETTINGS[mode]);
+	const blurb = $derived(BLURBS[mode]);
 </script>
 
 <Seo
@@ -35,8 +38,7 @@
 	</h1>
 
 	<p class="tagline rise" style="--i: 2">
-		Sorteie elencos históricos dos Majors de Counter-Strike, escale o time dos sonhos pick a pick —
-		até com 5 AWPers, se tiver coragem — e dispute um Major inteiro.
+		Escale o time dos sonhos e dispute o maior Major de todos os tempos.
 	</p>
 
 	{#if hasSave}
@@ -56,7 +58,23 @@
 			<button class="pill almanac" class:active={mode === 'almanac'} onclick={() => (mode = 'almanac')}>
 				Almanaque
 			</button>
+			{#if hardUnlocked}
+				<button class="pill hard" class:active={mode === 'hard'} onclick={() => (mode = 'hard')}>
+					Difícil
+				</button>
+			{:else}
+				<button
+					class="pill hard locked"
+					disabled
+					title="Vença um Major no Clássico ou Almanaque para desbloquear"
+				>
+					<span class="lock" aria-hidden="true">🔒</span> Difícil
+				</button>
+			{/if}
 		</div>
+		{#if !hardUnlocked}
+			<p class="unlock-hint">🔒 Modo <strong>Difícil</strong> — vença um Major para desbloquear.</p>
+		{/if}
 
 		<p class="settings">
 			{#each settings as s, i (s)}{#if i > 0}<span class="dot" aria-hidden="true">•</span>{/if}<span>{s}</span>{/each}
@@ -220,8 +238,29 @@
 		color: #08121d;
 	}
 
-	.pill:not(.active):hover {
+	.pill.active.hard {
+		background: linear-gradient(180deg, #ff9a90, var(--loss));
+		color: #1d0908;
+	}
+
+	.pill:not(.active):not(.locked):hover {
 		color: var(--text);
+	}
+
+	.pill.locked {
+		color: color-mix(in srgb, var(--muted) 75%, transparent);
+		cursor: not-allowed;
+	}
+
+	.pill.locked .lock {
+		font-size: 0.72rem;
+		margin-right: 0.15rem;
+	}
+
+	.unlock-hint {
+		margin: -0.4rem 0 0.9rem;
+		font-size: 0.78rem;
+		color: var(--muted);
 	}
 
 	.settings {

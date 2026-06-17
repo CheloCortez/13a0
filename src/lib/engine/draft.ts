@@ -2,12 +2,12 @@ import type { DraftedPlayer, Major, Role, Team } from '$lib/data/types';
 import { Rng } from './rng';
 import { resolveRoles } from './strength';
 
-export type GameMode = 'classic' | 'almanac';
+export type GameMode = 'classic' | 'almanac' | 'hard';
 
 /** Ordem canônica das funções (exibição). */
 export const DRAFT_ORDER: Role[] = ['awp', 'igl', 'entry', 'lurker', 'support'];
 
-export const REROLLS: Record<GameMode, number> = { classic: 3, almanac: 1 };
+export const REROLLS: Record<GameMode, number> = { classic: 3, almanac: 1, hard: 1 };
 
 export interface DraftOffer {
 	majorId: string;
@@ -32,7 +32,26 @@ function offerKey(offer: DraftOffer): string {
 	return `${offer.majorId}/${offer.team.id}`;
 }
 
-function rollOffer(majors: Major[], used: string[], rng: Rng): DraftOffer {
+/** Pares {major, time campeão} — pool do modo difícil (um campeão por major). */
+function championPool(majors: Major[]): { major: Major; team: Team }[] {
+	const pool: { major: Major; team: Team }[] = [];
+	for (const major of majors) {
+		const champ = major.teams.find((t) => t.placement === 'Campeão');
+		if (champ) pool.push({ major, team: champ });
+	}
+	return pool;
+}
+
+function rollOffer(majors: Major[], used: string[], rng: Rng, championsOnly = false): DraftOffer {
+	// Modo difícil: sorteia apenas de times campeões de Major (preserva o RNG dos demais modos).
+	if (championsOnly) {
+		const pool = championPool(majors);
+		for (;;) {
+			const { major, team } = pool[rng.int(pool.length)];
+			const offer: DraftOffer = { majorId: major.id, majorName: major.name, year: major.year, team };
+			if (!used.includes(offerKey(offer))) return offer;
+		}
+	}
 	for (;;) {
 		const major = majors[rng.int(majors.length)];
 		const team = major.teams[rng.int(major.teams.length)];
@@ -43,7 +62,7 @@ function rollOffer(majors: Major[], used: string[], rng: Rng): DraftOffer {
 
 export function createDraft(majors: Major[], mode: GameMode, seed: number): DraftState {
 	const rng = new Rng(seed);
-	const offer = rollOffer(majors, [], rng);
+	const offer = rollOffer(majors, [], rng, mode === 'hard');
 	return {
 		seed,
 		mode,
@@ -104,7 +123,7 @@ export function pick(state: DraftState, majors: Major[], nick: string): DraftSta
 	}
 
 	const rng = new Rng(state.rngState);
-	const offer = rollOffer(majors, state.usedTeamKeys, rng);
+	const offer = rollOffer(majors, state.usedTeamKeys, rng, state.mode === 'hard');
 	return {
 		...state,
 		round,
@@ -121,7 +140,7 @@ export function reroll(state: DraftState, majors: Major[]): DraftState {
 	if (state.rerollsLeft <= 0) throw new Error('Sem re-sorteios restantes');
 
 	const rng = new Rng(state.rngState);
-	const offer = rollOffer(majors, state.usedTeamKeys, rng);
+	const offer = rollOffer(majors, state.usedTeamKeys, rng, state.mode === 'hard');
 	return {
 		...state,
 		rerollsLeft: state.rerollsLeft - 1,

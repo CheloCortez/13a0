@@ -32,17 +32,24 @@
 		}
 
 		const params = page.url.searchParams;
-		const novo = params.get('novo');
+		const novoRaw = params.get('novo');
 		const seedParam = params.get('seed');
 		const modeRaw = params.get('mode');
-		const modeParam: GameMode = modeRaw === 'almanac' ? 'almanac' : 'classic';
 
-		if (novo === 'classic' || novo === 'almanac') {
-			game.start(novo);
+		// Resolve o modo, validando contra os valores conhecidos. O Difícil exige desbloqueio:
+		// uma URL com hard sem a conquista cai para o Clássico.
+		const resolveMode = (raw: string | null): GameMode => {
+			const m: GameMode = raw === 'almanac' || raw === 'hard' ? raw : 'classic';
+			return m === 'hard' && !game.hardUnlocked ? 'classic' : m;
+		};
+		const novo = novoRaw === 'classic' || novoRaw === 'almanac' || novoRaw === 'hard' ? novoRaw : null;
+
+		if (novo) {
+			game.start(resolveMode(novo));
 			goto(`${base}/jogo`, { replaceState: true });
 		} else if (seedParam) {
 			const seed = Number(seedParam);
-			game.start(modeParam, Number.isInteger(seed) && seed >= 0 ? seed : undefined);
+			game.start(resolveMode(modeRaw), Number.isInteger(seed) && seed >= 0 ? seed : undefined);
 			goto(`${base}/jogo`, { replaceState: true });
 		} else if (!game.draft && !game.load()) {
 			game.start('classic');
@@ -63,9 +70,12 @@
 				)
 			: []
 	);
-	/** Almanaque: ratings, funções, colocações e modificadores ficam ocultos. */
-	const almanac = $derived(game.mode === 'almanac');
-	const hideRatings = $derived(almanac && game.phase === 'draft');
+	/** Jogo às cegas: ratings/funções/colocações/força ocultos — vale para Almanaque e Difícil. */
+	const blind = $derived(game.mode === 'almanac' || game.mode === 'hard');
+	const hideRatings = $derived(blind && game.phase === 'draft');
+	const modeLabel = $derived(
+		game.mode === 'classic' ? 'Clássico' : game.mode === 'hard' ? 'Difícil' : 'Almanaque'
+	);
 
 	const achievements = $derived(
 		game.tournament ? computeAchievements(game.tournament.userMatches) : null
@@ -235,7 +245,7 @@
 			<p class="tag">Draft — pick {game.draft.round + 1} de 5</p>
 			<h2>Escolha <span class="role">um jogador</span></h2>
 			<p class="meta-line">
-				<span class="meta-chip">{game.mode === 'classic' ? 'Clássico' : 'Almanaque'}</span>
+				<span class="meta-chip">{modeLabel}</span>
 				<span class="meta-chip seed">seed #{game.seed}</span>
 			</p>
 		</header>
@@ -244,7 +254,7 @@
 			<TeamCard
 				title={offer.team.name}
 				subtitle={offer.majorName}
-				right={almanac ? undefined : offer.team.placement}
+				right={blind ? undefined : offer.team.placement}
 				teamKey="{offer.majorId}/{offer.team.id}"
 			>
 				{#each offer.team.players as player (player.nick)}
@@ -252,8 +262,8 @@
 						{player}
 						majorId={offer.majorId}
 						hideRating={hideRatings}
-						hideRoles={almanac}
-						highlight={!almanac &&
+						hideRoles={blind}
+						highlight={!blind &&
 							(vacantRoles.includes(player.role) ||
 								(player.role2 != null && vacantRoles.includes(player.role2)))}
 						onclick={() => game.pick(player.nick)}
@@ -278,7 +288,7 @@
 			<div class="picks">
 				<TeamCard title="Seu time até agora" subtitle="{game.draft.picks.length}/5">
 					{#each sortedPicks as p (p.nick)}
-						<PlayerCard player={p} majorId={p.majorId} hideRating={hideRatings} hideRoles={almanac} />
+						<PlayerCard player={p} majorId={p.majorId} hideRating={hideRatings} hideRoles={blind} />
 					{/each}
 					{#each Array(5 - game.draft.picks.length) as _, i (i)}
 						<div class="empty-tile">
@@ -286,7 +296,7 @@
 						</div>
 					{/each}
 				</TeamCard>
-				{#if !almanac}
+				{#if !blind}
 					<ModifierList picks={game.draft.picks} />
 				{/if}
 			</div>
@@ -298,15 +308,15 @@
 		<h2>Monte o seu time</h2>
 		<p class="muted swap-hint">
 			Arraste cada jogador para a função que quiser — qualquer combinação vale, mesmo com
-			penalidade.{#if !almanac} A força {game.userStrength.toFixed(3)} e os modificadores atualizam na hora.{/if}
+			penalidade.{#if !blind} A força {game.userStrength.toFixed(3)} e os modificadores atualizam na hora.{/if}
 		</p>
 		<RoleBoard
 			picks={game.draft.picks}
 			onMove={(nick, role) => game.setSlot(nick, role)}
-			hideRating={almanac}
-			hideRoles={almanac}
+			hideRating={blind}
+			hideRoles={blind}
 		/>
-		{#if !almanac}
+		{#if !blind}
 			<ModifierList picks={game.draft.picks} />
 		{/if}
 		<button class="btn big" onclick={() => game.confirm()}>🏆 Disputar o Major</button>
@@ -383,6 +393,9 @@
 			<div class="again">
 				<button class="btn btn-ghost" onclick={() => playAgain('classic')}>Jogar de novo — Clássico</button>
 				<button class="btn btn-ghost" onclick={() => playAgain('almanac')}>Jogar de novo — Almanaque</button>
+				{#if game.hardUnlocked}
+					<button class="btn btn-ghost" onclick={() => playAgain('hard')}>Jogar de novo — Difícil</button>
+				{/if}
 			</div>
 			{/if}
 		{/if}

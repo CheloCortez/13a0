@@ -42,3 +42,35 @@ describe('buildOpponents', () => {
 		expect(a).toEqual(b);
 	});
 });
+
+/** Marca o primeiro time de cada major como "Campeão". */
+function makeChampMajors(count: number, teamsPerMajor: number): Major[] {
+	return makeMajors(count, teamsPerMajor).map((mj) => ({
+		...mj,
+		teams: mj.teams.map((t, i) => (i === 0 ? { ...t, placement: 'Campeão' } : t))
+	}));
+}
+
+describe('buildOpponents — apenas campeões (modo difícil)', () => {
+	const champMajors = makeChampMajors(20, 6);
+
+	test('com championsOnly, os 15 adversários são todos campeões e distintos', () => {
+		const opponents = buildOpponents(champMajors, new Rng(42), true);
+		expect(opponents).toHaveLength(15);
+		expect(new Set(opponents.map((o) => o.id)).size).toBe(15);
+		// id é `${major.id}/${team.id}`; o campeão é sempre o time de índice 0 (team-m-0)
+		for (const o of opponents) expect(o.id).toMatch(/\/team-\d+-0$/);
+	});
+
+	test('é determinístico para a mesma seed', () => {
+		const a = buildOpponents(champMajors, new Rng(7), true).map((o) => o.id);
+		const b = buildOpponents(champMajors, new Rng(7), true).map((o) => o.id);
+		expect(a).toEqual(b);
+	});
+
+	test('sem o flag, comportamento inalterado (pode incluir não-campeões)', () => {
+		const opponents = buildOpponents(champMajors, new Rng(42));
+		const hasNonChampion = opponents.some((o) => !/\/team-\d+-0$/.test(o.id));
+		expect(hasNonChampion).toBe(true);
+	});
+});

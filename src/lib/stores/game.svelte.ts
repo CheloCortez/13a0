@@ -25,6 +25,7 @@ interface SavedGame {
 }
 
 const STORAGE_KEY = '13a0:campanha';
+const UNLOCK_KEY = '13a0:conquistas';
 
 /** Acesso a localStorage tolerante a falhas (modo anônimo, quota cheia, storage desativado). */
 function safeGetItem(key: string): string | null {
@@ -55,6 +56,16 @@ function safeRemoveItem(key: string): void {
 	}
 }
 
+function readHardUnlocked(): boolean {
+	const raw = safeGetItem(UNLOCK_KEY);
+	if (!raw) return false;
+	try {
+		return (JSON.parse(raw) as { hardUnlocked?: boolean }).hardUnlocked === true;
+	} catch {
+		return false;
+	}
+}
+
 class GameStore {
 	majors = $state<Major[]>([]);
 	phase = $state<Phase>('draft');
@@ -63,6 +74,20 @@ class GameStore {
 	revealed = $state(0);
 	/** Verdadeiro quando o navegador recusou persistir o progresso (anônimo/quota). */
 	persistFailed = $state(false);
+	/** Modo difícil liberado após vencer um Major (persistido em localStorage). */
+	hardUnlocked = $state(false);
+
+	constructor() {
+		this.hardUnlocked = readHardUnlocked();
+	}
+
+	/** Libera o modo difícil ao terminar uma campanha como campeão (idempotente). */
+	private maybeUnlockHard() {
+		if (this.hardUnlocked) return;
+		if (this.tournament?.userFinish !== 'campeão') return;
+		this.hardUnlocked = true;
+		safeSetItem(UNLOCK_KEY, JSON.stringify({ hardUnlocked: true }));
+	}
 
 	get mode(): GameMode {
 		return this.draft?.mode ?? 'classic';
@@ -116,7 +141,10 @@ class GameStore {
 	revealNext() {
 		const stages = this.stageCount;
 		if (this.revealed < stages) this.revealed++;
-		if (this.revealed >= stages) this.phase = 'result';
+		if (this.revealed >= stages) {
+			this.phase = 'result';
+			this.maybeUnlockHard();
+		}
 		this.save();
 	}
 
@@ -139,7 +167,7 @@ class GameStore {
 	private runTournament() {
 		if (!this.draft) return;
 		const rng = new Rng((this.draft.seed ^ 0x9e3779b9) >>> 0);
-		const opponents = buildOpponents(this.majors, rng);
+		const opponents = buildOpponents(this.majors, rng, this.draft.mode === 'hard');
 		const user = {
 			id: 'user',
 			name: 'Seu Time',
@@ -174,6 +202,7 @@ class GameStore {
 			this.phase = saved.phase;
 			this.revealed = saved.revealed;
 			if (saved.phase === 'tournament' || saved.phase === 'result') this.runTournament();
+			if (saved.phase === 'result') this.maybeUnlockHard();
 			return true;
 		} catch {
 			return false;

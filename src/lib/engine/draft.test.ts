@@ -23,6 +23,14 @@ function makeMajors(count: number, teamsPerMajor: number): Major[] {
 	}));
 }
 
+/** Marca o primeiro time de cada major como "Campeão" (um campeão por major, como nos dados reais). */
+function makeChampMajors(count: number, teamsPerMajor: number): Major[] {
+	return makeMajors(count, teamsPerMajor).map((mj) => ({
+		...mj,
+		teams: mj.teams.map((t, i) => (i === 0 ? { ...t, placement: 'Campeão' } : t))
+	}));
+}
+
 const majors = makeMajors(4, 6);
 
 describe('createDraft', () => {
@@ -158,5 +166,44 @@ describe('reroll', () => {
 		let state = createDraft(majors, 'almanac', 5);
 		state = reroll(state, majors);
 		expect(() => reroll(state, majors)).toThrow();
+	});
+});
+
+describe('modo difícil', () => {
+	const champMajors = makeChampMajors(8, 5);
+
+	test('tem 1 re-sorteio', () => {
+		expect(REROLLS.hard).toBe(1);
+		expect(createDraft(champMajors, 'hard', 1).rerollsLeft).toBe(1);
+	});
+
+	test('todas as ofertas do draft são de times campeões', () => {
+		for (let seed = 0; seed < 40; seed++) {
+			let state = createDraft(champMajors, 'hard', seed);
+			expect(state.offer!.team.placement).toBe('Campeão');
+			while (!isComplete(state)) {
+				expect(state.offer!.team.placement).toBe('Campeão');
+				state = pick(state, champMajors, state.offer!.team.players[0].nick);
+			}
+			expect(state.picks).toHaveLength(5);
+		}
+	});
+
+	test('re-sorteio no difícil também oferece campeão', () => {
+		let state = createDraft(champMajors, 'hard', 9);
+		state = reroll(state, champMajors);
+		expect(state.offer!.team.placement).toBe('Campeão');
+	});
+
+	test('clássico continua oferecendo qualquer time (não só campeões)', () => {
+		// com só 1 campeão por major, o clássico ainda deve oferecer não-campeões
+		let sawNonChampion = false;
+		let state = createDraft(champMajors, 'classic', 3);
+		if (state.offer!.team.placement !== 'Campeão') sawNonChampion = true;
+		while (!isComplete(state)) {
+			if (state.offer && state.offer.team.placement !== 'Campeão') sawNonChampion = true;
+			state = pick(state, champMajors, state.offer!.team.players[0].nick);
+		}
+		expect(sawNonChampion).toBe(true);
 	});
 });

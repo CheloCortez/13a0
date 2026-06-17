@@ -13,55 +13,60 @@
 	<p class="tag">Briefing</p>
 	<h2>Como jogar</h2>
 
-	<div class="steps">
-		<div class="panel step rise" style="--i: 0">
-			<h3><span class="num">01</span> O draft</h3>
-			<p>
-				Em cada um dos 5 picks, o jogo sorteia um time real que disputou um Major de Counter-Strike
-				(de 2013 até hoje). Você escolhe <strong>um jogador</strong> daquele elenco — qualquer
-				função, sem restrição: pode até fechar o time com 5 AWPers.
-			</p>
-			<p>
-				As funções (AWPer, IGL, Entry, Lurker e Suporte) se ajustam sozinhas a cada pick: quem tem o
-				melhor rating assume a função natural e os demais são realocados. Jogador fora da função
-				natural sofre penalidade de 15% no rating, times sem AWPer ou IGL de ofício perdem força, e
-				cada AWPer de ofício além do primeiro custa 5% — só cabe uma AWP por rodada.
-			</p>
+	<div class="panel steps rise" style="--i: 0">
+		<div class="step">
+			<span class="num">01</span>
+			<div class="icon-box">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<rect x="3" y="3" width="18" height="18" rx="2"/>
+					<circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/>
+					<circle cx="15.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/>
+					<circle cx="15.5" cy="15.5" r="1.2" fill="currentColor" stroke="none"/>
+					<circle cx="8.5" cy="15.5" r="1.2" fill="currentColor" stroke="none"/>
+					<circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+				</svg>
+			</div>
+			<strong class="step-title">Sorteie</strong>
+			<p class="step-desc">Receba 5 elencos históricos de Majors, um por pick</p>
 		</div>
 
-		<div class="panel step rise" style="--i: 1">
-			<h3><span class="num">02</span> Os modos</h3>
-			<p><strong>Clássico</strong> — os ratings dos jogadores ficam visíveis e você tem 3 re-sorteios.</p>
-			<p>
-				<strong>Almanaque</strong> — jogo às cegas: ratings, funções dos jogadores, colocações dos
-				times, modificadores e a força do seu time ficam ocultos, e você só tem 1 re-sorteio. Vale o
-				seu conhecimento da cena.
-			</p>
+		<div class="divider" aria-hidden="true"></div>
+
+		<div class="step">
+			<span class="num">02</span>
+			<div class="icon-box">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+					<circle cx="12" cy="7" r="4"/>
+				</svg>
+			</div>
+			<strong class="step-title">Escale</strong>
+			<p class="step-desc">Escolha um jogador de cada — qualquer função, sem restrição</p>
 		</div>
 
-		<div class="panel step rise" style="--i: 2">
-			<h3><span class="num">03</span> O Major</h3>
-			<p>
-				Seu time disputa um Major no formato real: fase suíça com 16 times (3 vitórias classificam, 3
-				derrotas eliminam, decisões em MD3) e playoffs com 8 times em MD3. Os mapas são simulados
-				round a round no MR12, com overtime.
-			</p>
-		</div>
+		<div class="divider" aria-hidden="true"></div>
 
-		<div class="panel step rise" style="--i: 3">
-			<h3><span class="num">04</span> O objetivo</h3>
-			<p>
-				Vencer o Major — e, para a glória máxima, vencer um mapa por <strong>13 a 0</strong>, o
-				placar perfeito que dá nome ao jogo.
-			</p>
+		<div class="step">
+			<span class="num">03</span>
+			<div class="icon-box">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+					<path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+					<path d="M4 22h16"/>
+					<path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+					<path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+					<path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>
+				</svg>
+			</div>
+			<strong class="step-title">Dispute</strong>
+			<p class="step-desc">Jogue um Major completo: fase suíça + playoffs</p>
 		</div>
 	</div>
 
-	<div class="panel credits rise" style="--i: 4">
+	<div class="panel credits rise" style="--i: 1">
 		<p class="muted">
-			Inspirado no <a href="https://7a0.com.br" rel="noopener">7 a 0</a>, o simulador de Copa do
-			Mundo criado por @chavozik4, e no 82-0 da NBA. Os elencos, funções e ratings são estimativas
-			com base no desempenho histórico de cada jogador. Projeto de fã, sem afiliação com a Valve.
+			Os elencos, funções e ratings são estimativas com base no desempenho histórico de cada
+			jogador. Projeto de fã, sem afiliação com a Valve.
 		</p>
 		<p class="muted">
 			Fotos dos jogadores, logos dos times e dados dos elencos da
@@ -86,35 +91,63 @@
 
 	.steps {
 		display: flex;
-		flex-direction: column;
-		gap: 0.7rem;
+		align-items: stretch;
+		padding: 0;
 	}
 
-	.step h3 {
+	.step {
+		flex: 1;
 		display: flex;
-		align-items: center;
-		gap: 0.55rem;
-		font-size: 1rem;
-		margin: 0 0 0.4rem;
-		color: var(--accent);
-		letter-spacing: 0.08em;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.4rem;
+		padding: 1.2rem 1.3rem;
+	}
+
+	.divider {
+		width: 1px;
+		background: var(--border);
+		flex-shrink: 0;
 	}
 
 	.num {
-		display: inline-grid;
+		font-family: var(--font-display);
+		font-size: 1.7rem;
+		font-weight: 700;
+		color: var(--accent);
+		line-height: 1;
+	}
+
+	.icon-box {
+		display: grid;
 		place-items: center;
-		min-width: 1.9rem;
-		padding: 0.06rem 0.3rem 0;
-		background: var(--panel-3);
+		width: 2.2rem;
+		height: 2.2rem;
+		background: var(--panel-2);
 		box-shadow: inset 0 0 0 1px var(--border-strong);
-		color: var(--accent-bright);
-		font-variant-numeric: tabular-nums;
+		color: var(--muted);
 		clip-path: polygon(var(--cut-sm) 0, 100% 0, 100% calc(100% - var(--cut-sm)), calc(100% - var(--cut-sm)) 100%, 0 100%, 0 var(--cut-sm));
 	}
 
-	p {
-		margin: 0.4rem 0;
+	.icon-box svg {
+		width: 1.15rem;
+		height: 1.15rem;
+	}
+
+	.step-title {
+		font-family: var(--font-display);
 		font-size: 0.95rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--text);
+	}
+
+	.step-desc {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--muted);
+		line-height: 1.4;
 	}
 
 	.credits {
@@ -124,5 +157,16 @@
 
 	.back {
 		margin-top: 1.2rem;
+	}
+
+	@media (max-width: 540px) {
+		.steps {
+			flex-direction: column;
+		}
+
+		.divider {
+			width: auto;
+			height: 1px;
+		}
 	}
 </style>

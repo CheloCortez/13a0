@@ -1,4 +1,4 @@
-import type { Major } from '$lib/data/types';
+import type { Major, Team } from '$lib/data/types';
 import type { Rng } from './rng';
 import { dynastyBonus, historicTeamStrength } from './strength';
 import type { TournamentTeam } from './tournament';
@@ -11,8 +11,11 @@ const ORG_ALIASES: Record<string, string> = {
 };
 const orgId = (teamId: string) => ORG_ALIASES[teamId] ?? teamId;
 
-/** Sorteia 15 times históricos distintos para disputar o Major contra o usuário. */
-export function buildOpponents(majors: Major[], rng: Rng): TournamentTeam[] {
+/**
+ * Sorteia 15 times históricos distintos para disputar o Major contra o usuário.
+ * No modo difícil (`championsOnly`), o campo inteiro é formado só por campeões de Major.
+ */
+export function buildOpponents(majors: Major[], rng: Rng, championsOnly = false): TournamentTeam[] {
 	const champCounts = new Map<string, number>();
 	for (const major of majors) {
 		const champ = major.teams.find((t) => t.placement === 'Campeão');
@@ -22,12 +25,26 @@ export function buildOpponents(majors: Major[], rng: Rng): TournamentTeam[] {
 		}
 	}
 
+	// Pool restrito aos campeões para o modo difícil (um campeão por major).
+	const champPool = championsOnly
+		? majors.flatMap((major) => {
+				const team = major.teams.find((t) => t.placement === 'Campeão');
+				return team ? [{ major, team }] : [];
+			})
+		: [];
+
 	const opponents: TournamentTeam[] = [];
 	const used = new Set<string>();
 
 	while (opponents.length < OPPONENT_COUNT) {
-		const major = majors[rng.int(majors.length)];
-		const team = major.teams[rng.int(major.teams.length)];
+		let major: Major;
+		let team: Team;
+		if (championsOnly) {
+			({ major, team } = champPool[rng.int(champPool.length)]);
+		} else {
+			major = majors[rng.int(majors.length)];
+			team = major.teams[rng.int(major.teams.length)];
+		}
 		const id = `${major.id}/${team.id}`;
 		if (used.has(id)) continue;
 		used.add(id);
