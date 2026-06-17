@@ -10,9 +10,11 @@ import {
 	type DraftState,
 	type GameMode
 } from '$lib/engine/draft';
+import { autoResolveVeto, type MapRecord } from '$lib/engine/maps';
 import { buildOpponents } from '$lib/engine/opponents';
 import { Rng, randomSeed } from '$lib/engine/rng';
 import { effectiveRating, teamStrength } from '$lib/engine/strength';
+import { type SeriesResult } from '$lib/engine/match';
 import { simulateTournament, type TournamentResult } from '$lib/engine/tournament';
 
 export type Phase = 'draft' | 'review' | 'tournament' | 'result';
@@ -22,6 +24,7 @@ interface SavedGame {
 	phase: Phase;
 	draft: DraftState;
 	revealed: number;
+	userMapHistory?: MapRecord[];
 }
 
 const STORAGE_KEY = '13a0:campanha';
@@ -72,6 +75,10 @@ class GameStore {
 	draft = $state<DraftState | null>(null);
 	tournament = $state<TournamentResult | null>(null);
 	revealed = $state(0);
+	/** Histórico acumulado do usuário por mapa neste torneio (salvo em SavedGame). */
+	userMapHistory = $state<MapRecord[]>([]);
+	/** Histórico dos times adversários por mapa — calculado, não salvo. */
+	private teamMapHistories: Record<string, MapRecord[]> = {};
 	/** Verdadeiro quando o navegador recusou persistir o progresso (anônimo/quota). */
 	persistFailed = $state(false);
 	/** Modo difícil liberado após vencer um Major (persistido em localStorage). */
@@ -79,6 +86,77 @@ class GameStore {
 
 	constructor() {
 		this.hardUnlocked = readHardUnlocked();
+	}
+
+	/** Retorna o histórico acumulado do time oponente (partidas vs. bots, calculado). */
+	getOpponentHistory(teamId: string): MapRecord[] {
+		return this.teamMapHistories[teamId] ?? [];
+	}
+
+	/**
+	 * Atualiza o histórico de mapas do usuário após uma partida concluída.
+	 * Chame em finishLive() com os mapas do veto e o resultado da série.
+	 */
+	updateUserMapHistory(maps: import('$lib/engine/maps').CsMap[], series: SeriesResult, userIsA: boolean) {
+		if (!maps.length) return;
+		const history = [...this.userMapHistory];
+		const userSide = userIsA ? 'A' : 'B';
+		for (let i = 0; i < Math.min(maps.length, series.maps.length); i++) {
+			const mapId = maps[i].id;
+			const won = series.maps[i].winner === userSide;
+			let rec = history.find((r) => r.mapId === mapId);
+			if (!rec) { rec = { mapId, wins: 0, losses: 0 }; history.push(rec); }
+			if (won) rec.wins++; else rec.losses++;
+		}
+		this.userMapHistory = history;
+		this.save();
+	}
+
+	/** Calcula o histórico de mapas de todos os times (exceto user) a partir do torneio. */
+	private computeTeamMapHistories(): Record<string, MapRecord[]> {
+		if (!this.tournament || !this.draft) return {};
+		const histories: Record<string, MapRecord[]> = {};
+		let matchIndex = 0;
+
+		const addResult = (teamId: string, mapId: string, won: boolean) => {
+			if (!histories[teamId]) histories[teamId] = [];
+			let rec = histories[teamId].find((r) => r.mapId === mapId);
+			if (!rec) { rec = { mapId, wins: 0, losses: 0 }; histories[teamId].push(rec); }
+			if (won) rec.wins++; else rec.losses++;
+		};
+
+		const processMatch = (
+			aId: string, bId: string,
+			series: SeriesResult,
+			bestOf: 1 | 3 | 5
+		) => {
+			// Seed única e determinística para cada partida bot-vs-bot
+			const seed = (this.draft!.seed ^ 0xcafebabe ^ (matchIndex * 0x6c62272e)) >>> 0;
+			matchIndex++;
+			if (aId === 'user' || bId === 'user') return; // user matches tracked separately
+			const { selected } = autoResolveVeto(seed, bestOf);
+			for (let i = 0; i < Math.min(selected.length, series.maps.length); i++) {
+				const mapId = selected[i].id;
+				const aWon = series.maps[i].winner === 'A';
+				addResult(aId, mapId, aWon);
+				addResult(bId, mapId, !aWon);
+			}
+		};
+
+		const t = this.tournament;
+		for (const round of t.swiss.rounds) {
+			// Ordenação determinística dentro de cada rodada
+			const sorted = [...round.matches].sort((a, b) =>
+				(a.a.id + a.b.id).localeCompare(b.a.id + b.b.id)
+			);
+			for (const m of sorted) processMatch(m.a.id, m.b.id, m.series, m.bestOf);
+		}
+		if (t.playoffs) {
+			for (const m of t.playoffs.quarterfinals) processMatch(m.a.id, m.b.id, m.series, 3);
+			for (const m of t.playoffs.semifinals) processMatch(m.a.id, m.b.id, m.series, 3);
+			processMatch(t.playoffs.final.a.id, t.playoffs.final.b.id, t.playoffs.final.series, 5);
+		}
+		return histories;
 	}
 
 	/** Libera o modo difícil ao terminar uma campanha como campeão (idempotente). */
@@ -106,6 +184,8 @@ class GameStore {
 		this.phase = 'draft';
 		this.tournament = null;
 		this.revealed = 0;
+		this.userMapHistory = [];
+		this.teamMapHistories = {};
 		this.save();
 	}
 
@@ -122,8 +202,8 @@ class GameStore {
 		this.save();
 	}
 
-	/** Reatribui manualmente a função de um jogador na revisão (qualquer das 5). */
-	setSlot(nick: string, role: Role) {
+	/** Reatribui manualmente a função de um jogador na revisão (qualquer das 5, ou null = desescalar). */
+	setSlot(nick: string, role: Role | null) {
 		if (!this.draft) return;
 		this.draft = { ...this.draft, picks: draftSetSlot(this.draft.picks, nick, role) };
 		this.save();
@@ -159,6 +239,8 @@ class GameStore {
 		this.tournament = null;
 		this.phase = 'draft';
 		this.revealed = 0;
+		this.userMapHistory = [];
+		this.teamMapHistories = {};
 		this.persistFailed = false;
 		safeRemoveItem(STORAGE_KEY);
 	}
@@ -173,10 +255,10 @@ class GameStore {
 			name: 'Seu Time',
 			strength: this.userStrength,
 			isUser: true,
-			// Elenco com rating efetivo (com penalidades) — base das stats do box score.
 			players: this.draft.picks.map((p) => ({ nick: p.nick, rating: effectiveRating(p) }))
 		};
 		this.tournament = simulateTournament(user, opponents, rng);
+		this.teamMapHistories = this.computeTeamMapHistories();
 	}
 
 	private save() {
@@ -185,9 +267,9 @@ class GameStore {
 			version: 1,
 			phase: this.phase,
 			draft: this.draft,
-			revealed: this.revealed
+			revealed: this.revealed,
+			userMapHistory: this.userMapHistory.length ? this.userMapHistory : undefined
 		};
-		// Em falha de escrita (anônimo/quota) o jogo segue em memória; só sinaliza a UI.
 		this.persistFailed = !safeSetItem(STORAGE_KEY, JSON.stringify(saved));
 	}
 
@@ -201,6 +283,7 @@ class GameStore {
 			this.draft = saved.draft;
 			this.phase = saved.phase;
 			this.revealed = saved.revealed;
+			this.userMapHistory = saved.userMapHistory ?? [];
 			if (saved.phase === 'tournament' || saved.phase === 'result') this.runTournament();
 			if (saved.phase === 'result') this.maybeUnlockHard();
 			return true;

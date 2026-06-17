@@ -74,6 +74,22 @@ describe('pick', () => {
 		expect(state.picks.every((p) => p.slot === 'awp')).toBe(true);
 	});
 
+	test('modos cegos (almanac/hard): todos os picks têm slot null ao entrar na revisão', () => {
+		const champMajors = makeChampMajors(8, 5);
+		const fixtures: [typeof majors, 'almanac' | 'hard'][] = [
+			[majors, 'almanac'],
+			[champMajors, 'hard']
+		];
+		for (const [pool, mode] of fixtures) {
+			let state = createDraft(pool, mode, 7);
+			while (!isComplete(state)) {
+				state = pick(state, pool, state.offer!.team.players[0].nick);
+			}
+			expect(isComplete(state)).toBe(true);
+			expect(state.picks.every((p) => p.slot === null)).toBe(true);
+		}
+	});
+
 	test('nunca oferece o mesmo time do mesmo major duas vezes na campanha', () => {
 		let state = createDraft(majors, 'classic', 3);
 		const seen = new Set<string>([`${state.offer!.majorId}/${state.offer!.team.id}`]);

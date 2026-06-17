@@ -95,7 +95,7 @@ export function assignSlots(picks: DraftedPlayer[]): DraftedPlayer[] {
  * inclusive repetida e mesmo que gere penalidade. Usado na revisão (drag and drop);
  * a escolha manual NÃO é sobrescrita pela realocação automática.
  */
-export function setSlot(picks: DraftedPlayer[], nick: string, role: Role): DraftedPlayer[] {
+export function setSlot(picks: DraftedPlayer[], nick: string, role: Role | null): DraftedPlayer[] {
 	return picks.map((p) => (p.nick === nick ? { ...p, slot: role } : p));
 }
 
@@ -108,15 +108,19 @@ export function pick(state: DraftState, majors: Major[], nick: string): DraftSta
 	const player = state.offer.team.players.find((p) => p.nick === nick);
 	if (!player) throw new Error(`Jogador "${nick}" não está na oferta atual`);
 
+	const blind = state.mode === 'almanac' || state.mode === 'hard';
 	const drafted: DraftedPlayer = {
 		...player,
-		slot: player.role,
+		slot: blind ? null : player.role,
 		teamName: state.offer.team.name,
 		majorId: state.offer.majorId,
 		majorName: state.offer.majorName
 	};
 
-	const picks = assignSlots([...state.picks, drafted]);
+	// Modo cego: sem alocação automática — o usuário posiciona na revisão.
+	const picks = blind
+		? [...state.picks, drafted]
+		: assignSlots([...state.picks, drafted]);
 	const round = state.round + 1;
 	if (round >= DRAFT_ORDER.length) {
 		return { ...state, round, picks, offer: null };

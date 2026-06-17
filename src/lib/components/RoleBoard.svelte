@@ -7,17 +7,21 @@
 		picks,
 		onMove,
 		hideRating = false,
-		hideRoles = false
+		hideRoles = false,
+		/** Modo cego: mostra bandeja de não-alocados; usuário posiciona manualmente. */
+		showUnassignedTray = false
 	}: {
 		picks: DraftedPlayer[];
-		onMove: (nick: string, role: Role) => void;
+		onMove: (nick: string, role: Role | null) => void;
 		hideRating?: boolean;
-		/** Almanaque: esconde as funções naturais do jogador nos chips. */
 		hideRoles?: boolean;
+		showUnassignedTray?: boolean;
 	} = $props();
 
 	const photoOf = (p: DraftedPlayer) =>
 		playerImages.byMajor[`${p.majorId}/${p.nick.toLowerCase()}`] ?? playerImages.byNick[p.nick.toLowerCase()];
+
+	const unassigned = $derived(picks.filter((p) => p.slot === null));
 
 	const byRole = $derived(
 		Object.fromEntries(ROLES.map((r) => [r, picks.filter((p) => p.slot === r)])) as Record<
@@ -30,6 +34,7 @@
 	let selected = $state<string | null>(null);
 	let dragging = $state<string | null>(null);
 	let overRole = $state<Role | null>(null);
+	let overTray = $state(false);
 	let ghostX = $state(0);
 	let ghostY = $state(0);
 
@@ -59,13 +64,19 @@
 		ghostY = e.clientY;
 		const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
 		overRole = (el?.closest('[data-role]')?.getAttribute('data-role') as Role | null) ?? null;
+		overTray = showUnassignedTray && !!el?.closest('[data-tray]');
 	}
 
 	function onPointerUp() {
 		if (dragging) {
-			if (overRole) onMove(dragging, overRole);
+			if (overRole) {
+				onMove(dragging, overRole);
+			} else if (overTray) {
+				onMove(dragging, null);
+			}
 			dragging = null;
 			overRole = null;
+			overTray = false;
 		}
 		armed = null;
 	}
@@ -78,7 +89,7 @@
 		selected = selected === nick ? null : nick;
 	}
 
-	/** Clique/Enter numa casa: move o jogador selecionado para ela. */
+	/** Clique/Enter numa casa de função: move o jogador selecionado para ela. */
 	function onBinActivate(role: Role) {
 		if (selected) {
 			onMove(selected, role);
@@ -86,8 +97,75 @@
 		}
 	}
 
+	/** Clique/Enter na bandeja: remove a função do jogador selecionado. */
+	function onTrayActivate() {
+		if (selected) {
+			onMove(selected, null);
+			selected = null;
+		}
+	}
+
 	const draggingPlayer = $derived(dragging ? picks.find((p) => p.nick === dragging) ?? null : null);
 </script>
+
+{#if showUnassignedTray}
+<div
+	class="tray"
+	class:over={overTray}
+	class:has-selection={selected !== null}
+	data-tray="true"
+	role="button"
+	tabindex="0"
+	aria-label={selected ? 'Remover função do jogador selecionado' : 'Jogadores não escalados'}
+	onclick={onTrayActivate}
+	onkeydown={(e) => {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();
+			onTrayActivate();
+		}
+	}}
+>
+	<span class="tray-label">Não<br/>escalados</span>
+	<div class="tray-slots">
+		{#each unassigned as p (p.nick)}
+			<button
+				type="button"
+				class="chip"
+				class:selected={selected === p.nick}
+				class:ghosted={dragging === p.nick}
+				onpointerdown={(e) => onPointerDown(e, p.nick)}
+				onpointermove={onPointerMove}
+				onpointerup={onPointerUp}
+				onpointercancel={onPointerUp}
+				onclick={(e) => { e.stopPropagation(); onChipClick(p.nick); }}
+				aria-pressed={selected === p.nick}
+				aria-label={p.nick}
+			>
+				<span class="chip-portrait" aria-hidden="true">
+					{#if photoOf(p)}
+						<img class="chip-photo" src="{base}/players/{photoOf(p)}" alt="" loading="lazy" />
+					{:else}
+						<svg viewBox="0 0 64 64" fill="currentColor">
+							<circle cx="32" cy="24" r="11" />
+							<path d="M10 60c2-14 10-21 22-21s20 7 22 21z" />
+						</svg>
+					{/if}
+				</span>
+				<span class="chip-info">
+					<span class="chip-nick">{p.nick}</span>
+					{#if !hideRoles}
+						<span class="chip-nat">{ROLE_LABELS[p.role]}{#if p.role2} · {ROLE_LABELS[p.role2]}{/if}</span>
+					{/if}
+				</span>
+				{#if !hideRating}<span class="chip-rating">{p.rating.toFixed(2)}</span>{/if}
+			</button>
+		{/each}
+		{#if unassigned.length === 0}
+			<span class="tray-done">✓ Todos escalados</span>
+		{/if}
+	</div>
+</div>
+{/if}
 
 <div class="board" class:has-selection={selected !== null || dragging !== null}>
 	{#each ROLES as role (role)}
@@ -157,9 +235,8 @@
 </div>
 
 <p class="hint muted">
-	Arraste um jogador para a casa da função desejada — ou toque num jogador e depois na função
-	(funciona no teclado com Enter). Qualquer combinação é permitida; funções repetidas reduzem a
-	força, mostrada abaixo.
+	Arraste um jogador para a função desejada — ou toque em dois para trocar (Enter também funciona).
+	Qualquer combinação é permitida; funções repetidas reduzem a força.
 </p>
 
 {#if draggingPlayer}
@@ -172,6 +249,58 @@
 {/if}
 
 <style>
+	/* ===== Bandeja de não-alocados (modo cego) ===== */
+	.tray {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.7rem;
+		padding: 0.55rem 0.7rem;
+		margin-bottom: 0.5rem;
+		background: var(--panel-2);
+		border: 1px solid var(--border);
+		border-top: 2px solid var(--border-strong);
+		cursor: default;
+		transition: border-color 0.12s, box-shadow 0.12s;
+	}
+
+	.tray.over {
+		border-color: var(--accent);
+		box-shadow: inset 0 0 0 1px var(--accent), 0 0 16px -6px var(--accent);
+	}
+
+	.tray.has-selection {
+		border-top-color: color-mix(in srgb, var(--accent) 60%, var(--border-strong));
+		cursor: pointer;
+	}
+
+	.tray-label {
+		font-family: var(--font-display);
+		font-size: 0.65rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.07em;
+		color: var(--muted);
+		flex-shrink: 0;
+		line-height: 1.3;
+		padding-top: 0.15rem;
+	}
+
+	.tray-slots {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		flex: 1;
+		align-items: center;
+	}
+
+	.tray-done {
+		font-size: 0.75rem;
+		color: var(--win);
+		font-family: var(--font-display);
+		font-weight: 600;
+	}
+
+	/* ===== Board (5 casas de função) ===== */
 	.board {
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
@@ -238,7 +367,7 @@
 		box-shadow: inset 0 0 0 1px var(--border);
 		color: var(--text);
 		cursor: grab;
-		touch-action: none; /* permite o drag por pointer no toque sem rolar a página */
+		touch-action: none;
 		clip-path: polygon(var(--cut-sm) 0, 100% 0, 100% calc(100% - var(--cut-sm)), calc(100% - var(--cut-sm)) 100%, 0 100%, 0 var(--cut-sm));
 		transition: box-shadow 0.12s, transform 0.12s;
 	}

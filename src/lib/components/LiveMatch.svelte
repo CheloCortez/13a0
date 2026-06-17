@@ -4,6 +4,7 @@
 	import { generateBoxScore, boxScoreSeed } from '$lib/engine/boxscore';
 	import type { SeriesResult } from '$lib/engine/match';
 	import type { RosterPlayer } from '$lib/engine/tournament';
+	import type { CsMap } from '$lib/engine/maps';
 	import MatchScoreboard, { type ScoreTeam } from './MatchScoreboard.svelte';
 
 	interface Side {
@@ -21,78 +22,31 @@
 		userPhotoByNick,
 		series,
 		userIsA,
-		mapNames,
+		maps: csMapList,
 		onDone
 	}: {
 		seed: number;
 		stageLabel: string;
 		user: Side;
 		opp: Side;
-		/** Chave `${majorId}/${teamId}` da logo do oponente. */
 		oppLogoKey: string;
-		/** Major do oponente (fotos da época). */
 		oppMajorId: string;
-		/** nick(lower) -> majorId de origem, p/ a foto da época do usuário. */
 		userPhotoByNick: Record<string, string>;
 		series: SeriesResult;
 		userIsA: boolean;
-		/** Nomes dos mapas do veto, em ordem. Se ausente, usa "Mapa N". */
-		mapNames?: string[];
+		/** Mapas do veto em ordem (com thumbnail). Se ausente, usa texto simples. */
+		maps?: CsMap[];
 		onDone: () => void;
 	} = $props();
 
-	const TICK = 300; // ms por round — cadência mais lenta e tensa
-	const TICK_EVENT = 800; // ms em rounds especiais (pausa extra para ler o badge)
-	const END_PAUSE = 1100; // beat no placar final antes de revelar o scoreboard
+	const TICK = 300;
+	const TICK_EVENT = 900; // pausa extra apenas para overtime
+	const END_PAUSE = 1100;
 	const reduced =
 		typeof window !== 'undefined' &&
 		window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-	type RoundEvent = 'pistol' | 'eco-win' | 'match-point' | 'overtime' | 'comeback';
-
-	interface EventInfo {
-		type: RoundEvent;
-		label: string;
-		color: string;
-	}
-
-	const EVENT_META: Record<RoundEvent, EventInfo> = {
-		pistol:       { type: 'pistol',       label: '🔫 Pistol Round',  color: 'var(--ct)' },
-		'eco-win':    { type: 'eco-win',       label: '💸 Eco Win!',      color: 'var(--win)' },
-		'match-point':{ type: 'match-point',   label: '⚔️ Match Point',   color: 'var(--accent)' },
-		overtime:     { type: 'overtime',      label: '⏱ Overtime!',      color: '#f6d860' },
-		comeback:     { type: 'comeback',      label: '🔄 Virada!',        color: 'var(--lurker)' }
-	};
-
-	function detectEvent(
-		roundIndex: number,
-		rounds: ('A' | 'B')[],
-		scoreA: number,
-		scoreB: number,
-		winner: 'A' | 'B'
-	): RoundEvent | null {
-		// Overtime: placar acabou de bater 12-12 antes deste round
-		if (scoreA === 12 && scoreB === 12) return 'overtime';
-		// Pistol: primeiro round de cada half regular ou início de OT
-		if (roundIndex === 0 || roundIndex === 12) return 'pistol';
-		// OT pistols (rounds 24, 27, 30, ...)
-		if (roundIndex >= 24 && (roundIndex - 24) % 6 === 0) return 'pistol';
-		// Match point: vencedor deste round chegaria a 12 pontos (próximo fecha)
-		const winnerScore = winner === 'A' ? scoreA : scoreB;
-		if (winnerScore === 11) return 'match-point';
-		// Eco win: winner perdeu os 3 rounds anteriores
-		const prev3 = rounds.slice(Math.max(0, roundIndex - 3), roundIndex);
-		if (prev3.length === 3 && prev3.every((w) => w !== winner)) return 'eco-win';
-		// Comeback: time que estava perdendo por 5+ pontos vence
-		const loserScore = winner === 'A' ? scoreB : scoreA;
-		if (loserScore - winnerScore >= 5) return 'comeback';
-		return null;
-	}
-
-	let currentEvent = $state<EventInfo | null>(null);
-	let eventTimer: ReturnType<typeof setTimeout> | undefined;
-
-	const maps = $derived(series.maps);
+	const seriesMaps = $derived(series.maps);
 	const userSide = $derived<'A' | 'B'>(userIsA ? 'A' : 'B');
 
 	let mapIndex = $state(0);
@@ -100,34 +54,49 @@
 	let phase = $state<'playing' | 'mapdone'>('playing');
 	let timer: ReturnType<typeof setInterval> | undefined;
 	let endTimer: ReturnType<typeof setTimeout> | undefined;
+	let eventTimer: ReturnType<typeof setTimeout> | undefined;
+	let showOvertime = $state(false);
 
-	const curMap = $derived(maps[mapIndex]);
+	const curMap = $derived(seriesMaps[mapIndex]);
 	const shown = $derived(curMap.rounds.slice(0, revealed));
 	const liveUser = $derived(shown.filter((w) => w === userSide).length);
 	const liveOpp = $derived(shown.length - liveUser);
 	const lastWinner = $derived(shown.length ? shown[shown.length - 1] : null);
 
-	// série: mapas já vencidos até aqui (inclui o mapa atual se terminado)
 	const seriesTally = $derived.by(() => {
-		let u = 0,
-			o = 0;
+		let u = 0, o = 0;
 		for (let i = 0; i <= mapIndex; i++) {
 			if (i === mapIndex && phase !== 'mapdone') break;
-			if (maps[i].winner === userSide) u++;
+			if (seriesMaps[i].winner === userSide) u++;
 			else o++;
 		}
 		return { u, o };
 	});
 
+	// Histórico de mapas já concluídos (índices 0..mapIndex-1)
+	const mapHistory = $derived.by(() => {
+		if (!csMapList || mapIndex === 0) return [];
+		return seriesMaps.slice(0, mapIndex).map((m, i) => {
+			const uScore = userIsA ? m.scoreA : m.scoreB;
+			const oScore = userIsA ? m.scoreB : m.scoreA;
+			return {
+				csMap: csMapList[i],
+				uScore,
+				oScore,
+				userWon: m.winner === userSide
+			};
+		});
+	});
+
 	$effect(() => {
-		mapIndex; // re-roda ao trocar de mapa
+		mapIndex;
 		revealed = 0;
 		phase = 'playing';
-		currentEvent = null;
+		showOvertime = false;
 		clearInterval(timer);
 		clearTimeout(endTimer);
 		clearTimeout(eventTimer);
-		const curRounds = maps[mapIndex].rounds;
+		const curRounds = seriesMaps[mapIndex].rounds;
 		const total = curRounds.length;
 		if (reduced || total === 0) {
 			revealed = total;
@@ -136,30 +105,28 @@
 		}
 
 		function tick() {
-			const idx = revealed; // índice do round que acabou de ser revelado
+			const idx = revealed;
 			revealed++;
-			// Placar antes deste round
 			const prevShown = curRounds.slice(0, idx);
 			const prevA = prevShown.filter((w) => w === 'A').length;
 			const prevB = prevShown.length - prevA;
-			const winner = curRounds[idx];
-			const evt = detectEvent(idx, curRounds.slice(0, idx), prevA, prevB, winner);
-			currentEvent = evt ? EVENT_META[evt] : null;
+			// Só detectar overtime
+			const isOt = prevA === 12 && prevB === 12;
+			if (isOt) showOvertime = true;
 
 			if (revealed >= total) {
 				clearInterval(timer);
 				endTimer = setTimeout(() => {
-					currentEvent = null;
+					showOvertime = false;
 					phase = 'mapdone';
 				}, END_PAUSE);
 				return;
 			}
 
-			if (evt && !reduced) {
-				// Pausa extra para leitura do badge: parar o intervalo e retomar após delay
+			if (isOt && !reduced) {
 				clearInterval(timer);
 				eventTimer = setTimeout(() => {
-					currentEvent = null;
+					showOvertime = false;
 					timer = setInterval(tick, TICK);
 				}, TICK_EVENT);
 			}
@@ -177,16 +144,15 @@
 		clearInterval(timer);
 		clearTimeout(endTimer);
 		clearTimeout(eventTimer);
-		currentEvent = null;
+		showOvertime = false;
 		revealed = curMap.rounds.length;
 		phase = 'mapdone';
 	}
 	function next() {
-		if (mapIndex < maps.length - 1) mapIndex++;
+		if (mapIndex < seriesMaps.length - 1) mapIndex++;
 		else onDone();
 	}
 
-	// scoreboard do mapa terminado
 	const board = $derived.by(() => {
 		if (phase !== 'mapdone') return null;
 		const bs = generateBoxScore(
@@ -218,18 +184,44 @@
 	});
 
 	const oppLogo = $derived(teamLogos[oppLogoKey]);
-	const isLast = $derived(mapIndex >= maps.length - 1);
+	const isLast = $derived(mapIndex >= seriesMaps.length - 1);
+	const currentCsMap = $derived(csMapList?.[mapIndex]);
 </script>
 
 <div class="live">
-	<p class="stage-tag">
-		{stageLabel}
-		{#if maps.length > 1}
-			· {mapNames?.[mapIndex] ?? `Mapa ${mapIndex + 1}`}
-		{:else if mapNames?.[0]}
-			· {mapNames[0]}
+	<p class="stage-tag">{stageLabel}</p>
+
+	<!-- Histórico de mapas anteriores na série -->
+	{#if mapHistory.length > 0}
+		<div class="map-history">
+			{#each mapHistory as h (h.csMap?.id ?? h.uScore)}
+				<div class="map-card hist-card" class:hist-won={h.userWon} class:hist-lost={!h.userWon}>
+					{#if h.csMap}
+						<img class="map-thumb" src="{base}{h.csMap.image}" alt={h.csMap.name} />
+					{/if}
+					<span class="map-card-name hist-name">{h.csMap?.name ?? '—'}</span>
+					<span class="map-num hist-score" class:score-won={h.userWon} class:score-lost={!h.userWon}>
+						{h.uScore}–{h.oScore}
+					</span>
+				</div>
+			{/each}
+		</div>
+	{/if}
+
+	<!-- Card do mapa atual — sempre abaixo do histórico -->
+	{#if currentCsMap}
+		<div class="map-card map-card-current">
+			<img class="map-thumb" src="{base}{currentCsMap.image}" alt={currentCsMap.name} />
+			<span class="map-card-name">{currentCsMap.name}</span>
+			{#if seriesMaps.length > 1}
+				<span class="map-num">Mapa {mapIndex + 1}</span>
+			{/if}
+		</div>
+	{:else}
+		{#if seriesMaps.length > 1}
+			<p class="map-text-fallback">Mapa {mapIndex + 1}</p>
 		{/if}
-	</p>
+	{/if}
 
 	<div class="board-live" class:done={phase === 'mapdone'}>
 		<div class="team-side user">
@@ -247,18 +239,11 @@
 		</div>
 	</div>
 
-	{#if currentEvent}
-		<div
-			class="round-event"
-			style="--evt-color: {currentEvent.color}"
-			role="status"
-			aria-live="polite"
-		>
-			{currentEvent.label}
-		</div>
+	{#if showOvertime}
+		<div class="round-event" role="status" aria-live="polite">⏱ Overtime!</div>
 	{/if}
 
-	{#if maps.length > 1}
+	{#if seriesMaps.length > 1}
 		<p class="series-tally">Série {seriesTally.u}–{seriesTally.o}</p>
 	{/if}
 
@@ -269,7 +254,7 @@
 	{:else if board}
 		{@const m = curMap}
 		<MatchScoreboard
-			caption="Mapa {mapIndex + 1} — {m.scoreA}–{m.scoreB}{m.overtime ? ' (prorrogação)' : ''}"
+			caption="{currentCsMap?.name ?? `Mapa ${mapIndex + 1}`} — {m.scoreA}–{m.scoreB}{m.overtime ? ' (prorrogação)' : ''}"
 			teamA={board.teamA}
 			teamB={board.teamB}
 		/>
@@ -297,6 +282,99 @@
 		color: var(--accent);
 	}
 
+	/* Card do mapa atual */
+	.map-card {
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		padding: 0.3rem 0.7rem 0.3rem 0.3rem;
+		background: var(--panel-2);
+		border: 1px solid var(--border);
+		border-left: 3px solid var(--accent);
+		overflow: hidden;
+	}
+
+	.map-thumb {
+		width: 96px;
+		height: 54px;
+		object-fit: cover;
+		flex-shrink: 0;
+		display: block;
+	}
+
+	.map-card-name {
+		flex: 1;
+		font-family: var(--font-display);
+		font-size: 1.05rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--accent-bright);
+	}
+
+	.map-num {
+		font-family: var(--font-display);
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--muted);
+		flex-shrink: 0;
+	}
+
+	/* Mapa atual: borda accent mais forte que o histórico */
+	.map-card-current {
+		border-left-color: var(--accent);
+		border-left-width: 4px;
+	}
+
+	.map-text-fallback {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: 0.8rem;
+		color: var(--muted);
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	/* Histórico de mapas da série */
+	.map-history {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+	}
+
+	/* Cards do histórico — mesma estrutura que .map-card, diferenciados por opacidade e cor */
+	.hist-card {
+		opacity: 0.75;
+		border-left-color: var(--border-strong);
+	}
+
+	.hist-card .map-thumb {
+		filter: brightness(0.7);
+	}
+
+	.hist-card .map-card-name {
+		color: var(--muted);
+	}
+
+	.hist-card.hist-won {
+		border-left-color: var(--win);
+	}
+
+	.hist-card.hist-lost {
+		border-left-color: var(--loss);
+	}
+
+	.hist-score.score-won {
+		color: var(--win);
+	}
+
+	.hist-score.score-lost {
+		color: var(--loss);
+	}
+
+	/* Placar ao vivo */
 	.board-live {
 		display: grid;
 		grid-template-columns: 1fr auto 1fr;
@@ -367,13 +445,8 @@
 		transition: transform 0.12s ease;
 	}
 
-	.num.user {
-		color: var(--accent-bright);
-	}
-
-	.num.opp {
-		color: var(--ct);
-	}
+	.num.user { color: var(--accent-bright); }
+	.num.opp  { color: var(--ct); }
 
 	.num.pop {
 		transform: scale(1.28);
@@ -382,6 +455,32 @@
 	.sep {
 		color: var(--muted);
 		font-size: 1.8rem;
+	}
+
+	/* Overtime badge */
+	.round-event {
+		text-align: center;
+		font-family: var(--font-display);
+		font-size: 0.82rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: #f6d860;
+		padding: 0.25rem 0.8rem;
+		background: color-mix(in srgb, #f6d860 12%, var(--panel-2));
+		border: 1px solid color-mix(in srgb, #f6d860 35%, transparent);
+		clip-path: polygon(
+			var(--cut-sm) 0, 100% 0,
+			100% calc(100% - var(--cut-sm)),
+			calc(100% - var(--cut-sm)) 100%,
+			0 100%, 0 var(--cut-sm)
+		);
+		animation: evt-in 0.18s ease forwards;
+	}
+
+	@keyframes evt-in {
+		from { opacity: 0; transform: translateY(-4px); }
+		to   { opacity: 1; transform: translateY(0); }
 	}
 
 	.series-tally {
@@ -411,40 +510,9 @@
 		font-size: 1.05rem;
 	}
 
-	.round-event {
-		text-align: center;
-		font-family: var(--font-display);
-		font-size: 0.82rem;
-		font-weight: 700;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		color: var(--evt-color, var(--accent));
-		padding: 0.25rem 0.8rem;
-		background: color-mix(in srgb, var(--evt-color, var(--accent)) 12%, var(--panel-2));
-		border: 1px solid color-mix(in srgb, var(--evt-color, var(--accent)) 35%, transparent);
-		clip-path: polygon(
-			var(--cut-sm) 0, 100% 0,
-			100% calc(100% - var(--cut-sm)),
-			calc(100% - var(--cut-sm)) 100%,
-			0 100%, 0 var(--cut-sm)
-		);
-		animation: evt-in 0.18s ease forwards;
-	}
-
-	@keyframes evt-in {
-		from { opacity: 0; transform: translateY(-4px); }
-		to   { opacity: 1; transform: translateY(0); }
-	}
-
 	@media (prefers-reduced-motion: reduce) {
-		.num {
-			transition: none;
-		}
-		.num.pop {
-			transform: none;
-		}
-		.round-event {
-			animation: none;
-		}
+		.num { transition: none; }
+		.num.pop { transform: none; }
+		.round-event { animation: none; }
 	}
 </style>

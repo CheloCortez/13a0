@@ -81,9 +81,8 @@ function topSquad(players: { teamName: string }[]): { team: string; count: numbe
  */
 export function teamStrength(players: DraftedPlayer[]): number {
 	let strength = players.reduce((sum, p) => sum + p.rating, 0) / players.length;
-	// As penalidades seguem a função em que cada jogador foi ESCALADO (slot), não a
-	// resolução automática — assim a escolha manual do usuário afeta a força.
-	strength *= penaltyFactor(tally(players.map((p) => p.slot)));
+	const slotted = players.map((p) => p.slot).filter((s): s is Role => s !== null);
+	if (slotted.length > 0) strength *= penaltyFactor(tally(slotted));
 	const squad = topSquad(players);
 	if (squad) strength *= SAME_TEAM_BONUS ** (squad.count - 2);
 	return strength;
@@ -101,7 +100,7 @@ const pctOf = (factor: number) => (factor - 1) * 100;
 /** Lista os modificadores ativos no elenco (penalidades de conflito + bônus). */
 export function teamModifiers(players: DraftedPlayer[]): TeamModifier[] {
 	const mods: TeamModifier[] = [];
-	const c = tally(players.map((p) => p.slot));
+	const c = tally(players.map((p) => p.slot).filter((s): s is Role => s !== null));
 
 	if (c.awp >= 2) mods.push({ kind: 'awp-conflict', count: c.awp, pct: pctOf(AWP_CONFLICT ** (c.awp - 1)) });
 	if (c.igl >= 2) mods.push({ kind: 'igl-conflict', count: c.igl, pct: pctOf(IGL_CONFLICT ** (c.igl - 1)) });

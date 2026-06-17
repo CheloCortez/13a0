@@ -14,6 +14,7 @@
 	import SwissBracket from '$lib/components/SwissBracket.svelte';
 	import TeamCard from '$lib/components/TeamCard.svelte';
 	import { DRAFT_ORDER, type GameMode } from '$lib/engine/draft';
+	import type { CsMap } from '$lib/engine/maps';
 	import { computeAchievements, shareText } from '$lib/engine/share';
 	import { game } from '$lib/stores/game.svelte';
 	import { loadAllMajors } from '$lib/data/loader';
@@ -25,6 +26,7 @@
 	let ready = $state(false);
 	let loadError = $state(false);
 	let copied = $state(false);
+	let showDraftHint = $state(false);
 
 	async function boot() {
 		loadError = false;
@@ -69,13 +71,17 @@
 	);
 	const sortedPicks = $derived(
 		game.draft
-			? [...game.draft.picks].sort(
-					(a, b) => DRAFT_ORDER.indexOf(a.slot) - DRAFT_ORDER.indexOf(b.slot)
-				)
+			? [...game.draft.picks].sort((a, b) => {
+					const ia = a.slot !== null ? DRAFT_ORDER.indexOf(a.slot) : Infinity;
+					const ib = b.slot !== null ? DRAFT_ORDER.indexOf(b.slot) : Infinity;
+					return ia - ib;
+				})
 			: []
 	);
 	/** Jogo às cegas: ratings/funções/colocações/força ocultos — vale para Almanaque e Difícil. */
 	const blind = $derived(game.mode === 'almanac' || game.mode === 'hard');
+	/** Todos os jogadores têm slot atribuído (false apenas em modos cegos com alocação pendente). */
+	const allAssigned = $derived(game.draft?.picks.every((p) => p.slot !== null) ?? true);
 	const hideRatings = $derived(blind && game.phase === 'draft');
 	const modeLabel = $derived(
 		game.mode === 'classic' ? 'Clássico' : game.mode === 'hard' ? 'Difícil' : 'Almanaque'
@@ -95,7 +101,7 @@
 	let liveStageIndex = $state<number | null>(null);
 	let playoffsEl = $state<HTMLElement | null>(null);
 	/** Mapas definidos pelo veto; null = veto ainda não concluído para esta partida. */
-	let vetoMaps = $state<string[] | null>(null);
+	let vetoMaps = $state<CsMap[] | null>(null);
 
 	const stageLabelAt = (idx: number) =>
 		idx < swissRoundCount
@@ -190,6 +196,10 @@
 	}
 	async function finishLive() {
 		const wasPlayoff = liveStageIndex !== null && liveStageIndex >= swissRoundCount;
+		// Atualiza histórico de mapas do usuário antes de limpar vetoMaps
+		if (vetoMaps && liveProps) {
+			game.updateUserMapHistory(vetoMaps, liveProps.series, liveProps.userIsA);
+		}
 		vetoMaps = null;
 		liveStageIndex = null;
 		game.revealNext();
@@ -275,19 +285,33 @@
 					/>
 				{/each}
 			</TeamCard>
-			<p class="hint muted">
-				Toque em um jogador para escalá-lo — qualquer função, inclusive repetida. Os jogadores de
-				funções que faltam no seu time aparecem destacados. Dois jogadores de uma mesma função
-				reduzem a força; híbridos não geram conflito, e 3+ jogadores do mesmo time dão bônus.
-			</p>
-			<button
-				class="btn btn-ghost"
-				disabled={game.draft.rerollsLeft === 0}
-				onclick={() => game.reroll()}
-			>
-				🎲 Re-sortear time ({game.draft.rerollsLeft} restante{game.draft.rerollsLeft === 1 ? '' : 's'})
-			</button>
-		</div>
+			<div class="offer-footer">
+				<span class="hint-tip">
+					<button
+						type="button"
+						class="hint-btn"
+						class:active={showDraftHint}
+						aria-expanded={showDraftHint}
+						aria-label="Dica de draft"
+						onclick={() => (showDraftHint = !showDraftHint)}
+					>?</button>
+					{#if showDraftHint}
+						<span role="tooltip" class="tip-text">
+							Toque num jogador para escalá-lo — qualquer função, inclusive repetida. Jogadores de
+							funções que faltam no seu time ficam destacados. Dois do mesmo papel reduzem a força;
+							híbridos não geram conflito, e 3+ do mesmo time dão bônus de sinergia.
+						</span>
+					{/if}
+				</span>
+				<button
+					class="btn btn-ghost"
+					disabled={game.draft.rerollsLeft === 0}
+					onclick={() => game.reroll()}
+				>
+					🎲 Re-sortear time ({game.draft.rerollsLeft} restante{game.draft.rerollsLeft === 1 ? '' : 's'})
+				</button>
+			</div><!-- /offer-footer -->
+		</div><!-- /offer -->
 
 		{#if game.draft.picks.length > 0}
 			<div class="picks">
@@ -311,20 +335,26 @@
 	<section>
 		<p class="tag">Escalação final</p>
 		<h2>Monte o seu time</h2>
-		<p class="muted swap-hint">
-			Arraste cada jogador para a função que quiser — qualquer combinação vale, mesmo com
-			penalidade.{#if !blind} A força {game.userStrength.toFixed(3)} e os modificadores atualizam na hora.{/if}
-		</p>
+		{#if !blind}
+			<div class="strength-bar">
+				<span class="strength-label">Força do time</span>
+				<span class="strength-value">{game.userStrength.toFixed(3)}</span>
+			</div>
+		{/if}
 		<RoleBoard
 			picks={game.draft.picks}
 			onMove={(nick, role) => game.setSlot(nick, role)}
 			hideRating={blind}
 			hideRoles={blind}
+			showUnassignedTray={blind}
 		/>
 		{#if !blind}
 			<ModifierList picks={game.draft.picks} />
 		{/if}
-		<button class="btn big" onclick={() => game.confirm()}>🏆 Disputar o Major</button>
+		<button class="btn big" disabled={!allAssigned} onclick={() => game.confirm()}>🏆 Disputar o Major</button>
+		{#if blind && !allAssigned}
+			<p class="assign-hint muted">Arraste todos os jogadores para uma função para continuar.</p>
+		{/if}
 	</section>
 {:else if (game.phase === 'tournament' || game.phase === 'result') && game.tournament}
 	<section>
@@ -338,6 +368,11 @@
 						bestOf={liveBestOf}
 						opponentName={liveProps.opp.name}
 						rngSeed={vetoSeed}
+						mapHistory={{
+							user: game.userMapHistory,
+							opponent: game.getOpponentHistory(liveProps.oppLogoKey)
+						}}
+						almanac={blind}
 						onDone={(maps) => { vetoMaps = maps; }}
 					/>
 				{:else}
@@ -351,7 +386,7 @@
 						userPhotoByNick={liveProps.userPhotoByNick}
 						series={liveProps.series}
 						userIsA={liveProps.userIsA}
-						mapNames={vetoMaps}
+						maps={vetoMaps}
 						onDone={finishLive}
 					/>
 				{/if}
@@ -494,9 +529,85 @@
 		align-self: flex-start;
 	}
 
-	.hint {
+	/* ===== Tooltip de dica no draft ===== */
+	.offer-footer {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+
+	.hint-tip {
+		position: relative;
+		display: inline-flex;
+		flex-shrink: 0;
+	}
+
+	.hint-btn {
+		display: grid;
+		place-items: center;
+		width: 1.7rem;
+		height: 1.7rem;
+		border: 1px solid var(--border-strong);
+		background: var(--panel-2);
+		color: var(--muted);
+		font-family: var(--font-display);
+		font-size: 0.85rem;
+		font-weight: 700;
+		cursor: help;
+		clip-path: polygon(var(--cut-sm) 0, 100% 0, 100% calc(100% - var(--cut-sm)), calc(100% - var(--cut-sm)) 100%, 0 100%, 0 var(--cut-sm));
+		transition: color 0.12s, border-color 0.12s;
+	}
+
+	.hint-btn:hover,
+	.hint-btn.active {
+		color: var(--accent-bright);
+		border-color: var(--accent-dark);
+	}
+
+	.tip-text {
+		position: absolute;
+		top: calc(100% + 6px);
+		left: 0;
+		width: 22rem;
+		max-width: calc(100vw - 2.4rem);
+		background: var(--panel-3);
+		border: 1px solid var(--border-strong);
+		border-top: 2px solid var(--accent);
+		padding: 0.65rem 0.8rem;
 		font-size: 0.8rem;
-		margin: 0;
+		color: var(--muted);
+		line-height: 1.45;
+		z-index: 50;
+	}
+
+	/* ===== Barra de força na revisão ===== */
+	.strength-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.55rem 0.9rem;
+		margin-bottom: 0.75rem;
+		background: var(--panel-2);
+		border-top: 2px solid var(--accent-dark);
+		box-shadow: inset 0 0 0 1px var(--border);
+	}
+
+	.strength-label {
+		font-family: var(--font-display);
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--muted);
+	}
+
+	.strength-value {
+		font-family: var(--font-display);
+		font-size: 1.6rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		color: var(--accent-bright);
+		text-shadow: 0 0 14px rgba(246, 168, 33, 0.4);
 	}
 
 	.picks {
@@ -526,9 +637,10 @@
 		clip-path: polygon(var(--cut-sm) 0, 100% 0, 100% calc(100% - var(--cut-sm)), calc(100% - var(--cut-sm)) 100%, 0 100%, 0 var(--cut-sm));
 	}
 
-	.swap-hint {
-		font-size: 0.85rem;
-		margin: 0.2rem 0 0.9rem;
+	.assign-hint {
+		font-size: 0.8rem;
+		text-align: center;
+		margin: 0.4rem 0 0;
 	}
 
 	.big {

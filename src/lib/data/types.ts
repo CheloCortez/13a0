@@ -46,8 +46,8 @@ export interface MajorIndexEntry {
 
 /** Jogador escalado no draft do usuário. */
 export interface DraftedPlayer extends Player {
-	/** Função em que foi escalado (pode diferir da natural, com penalidade). */
-	slot: Role;
+	/** Função em que foi escalado. null = não alocado (modo cego: usuário aloca na revisão). */
+	slot: Role | null;
 	teamName: string;
 	majorId: string;
 	majorName: string;
