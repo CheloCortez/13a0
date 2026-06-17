@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import LiveMatch from '$lib/components/LiveMatch.svelte';
+	import MapVeto from '$lib/components/MapVeto.svelte';
 	import MatchupPreview from '$lib/components/MatchupPreview.svelte';
 	import ModifierList from '$lib/components/ModifierList.svelte';
 	import PlayerCard from '$lib/components/PlayerCard.svelte';
@@ -93,6 +94,8 @@
 	/* ===== Partida ao vivo (round a round) das partidas do usuário ===== */
 	let liveStageIndex = $state<number | null>(null);
 	let playoffsEl = $state<HTMLElement | null>(null);
+	/** Mapas definidos pelo veto; null = veto ainda não concluído para esta partida. */
+	let vetoMaps = $state<string[] | null>(null);
 
 	const stageLabelAt = (idx: number) =>
 		idx < swissRoundCount
@@ -136,6 +139,24 @@
 		};
 	});
 
+	/** bestOf da partida em andamento (para o veto). */
+	const liveBestOf = $derived.by((): 1 | 3 | 5 => {
+		if (liveStageIndex === null) return 1;
+		if (liveStageIndex < swissRoundCount) {
+			// SwissMatch tem bestOf: 1 | 3
+			const m = userMatchAt(liveStageIndex) as { bestOf?: 1 | 3 } | null;
+			return m?.bestOf ?? 1;
+		}
+		const playoffPhase = liveStageIndex - swissRoundCount;
+		// 0=quartas, 1=semis: BO3; 2=final: BO5
+		return playoffPhase >= 2 ? 5 : 3;
+	});
+
+	/** Seed para o veto: gameSeed XOR índice da partida (determinístico por campanha). */
+	const vetoSeed = $derived(
+		liveStageIndex !== null ? (game.seed ^ (liveStageIndex * 0x9e3779b9)) >>> 0 : 0
+	);
+
 	const stageActionLabel = (idx: number) =>
 		idx < swissRoundCount
 			? `Simular a Rodada ${idx + 1}`
@@ -160,11 +181,16 @@
 	/** Avança a campanha: anima a partida do usuário (se houver) antes de revelar a rodada. */
 	function advance() {
 		const idx = game.revealed;
-		if (userMatchAt(idx)) liveStageIndex = idx;
-		else game.revealNext();
+		if (userMatchAt(idx)) {
+			vetoMaps = null; // reseta veto para nova partida
+			liveStageIndex = idx;
+		} else {
+			game.revealNext();
+		}
 	}
 	async function finishLive() {
 		const wasPlayoff = liveStageIndex !== null && liveStageIndex >= swissRoundCount;
+		vetoMaps = null;
 		liveStageIndex = null;
 		game.revealNext();
 		if (wasPlayoff) {
@@ -307,18 +333,28 @@
 
 		{#if liveStageIndex !== null && liveProps}
 			{#key liveStageIndex}
-				<LiveMatch
-					seed={liveProps.seed}
-					stageLabel={liveProps.stageLabel}
-					user={liveProps.user}
-					opp={liveProps.opp}
-					oppLogoKey={liveProps.oppLogoKey}
-					oppMajorId={liveProps.oppMajorId}
-					userPhotoByNick={liveProps.userPhotoByNick}
-					series={liveProps.series}
-					userIsA={liveProps.userIsA}
-					onDone={finishLive}
-				/>
+				{#if vetoMaps === null}
+					<MapVeto
+						bestOf={liveBestOf}
+						opponentName={liveProps.opp.name}
+						rngSeed={vetoSeed}
+						onDone={(maps) => { vetoMaps = maps; }}
+					/>
+				{:else}
+					<LiveMatch
+						seed={liveProps.seed}
+						stageLabel={liveProps.stageLabel}
+						user={liveProps.user}
+						opp={liveProps.opp}
+						oppLogoKey={liveProps.oppLogoKey}
+						oppMajorId={liveProps.oppMajorId}
+						userPhotoByNick={liveProps.userPhotoByNick}
+						series={liveProps.series}
+						userIsA={liveProps.userIsA}
+						mapNames={vetoMaps}
+						onDone={finishLive}
+					/>
+				{/if}
 			{/key}
 		{:else}
 			<h3 class="phase-title">Fase suíça</h3>

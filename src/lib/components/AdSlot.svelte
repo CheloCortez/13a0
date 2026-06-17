@@ -6,17 +6,8 @@
 
 	onMount(() => {
 		if (!enabled) return;
-		const id = 'adsense-loader';
-		if (!document.getElementById(id)) {
-			const s = document.createElement('script');
-			s.id = id;
-			s.async = true;
-			s.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`;
-			s.crossOrigin = 'anonymous';
-			document.head.appendChild(s);
-		}
 		try {
-			// @ts-expect-error adsbygoogle é injetado pelo script externo
+			// @ts-expect-error adsbygoogle é injetado pelo script em app.html
 			(window.adsbygoogle = window.adsbygoogle || []).push({});
 		} catch {
 			/* adblock ou script bloqueado — degrada sem quebrar */

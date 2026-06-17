@@ -21,6 +21,7 @@
 		userPhotoByNick,
 		series,
 		userIsA,
+		mapNames,
 		onDone
 	}: {
 		seed: number;
@@ -35,14 +36,61 @@
 		userPhotoByNick: Record<string, string>;
 		series: SeriesResult;
 		userIsA: boolean;
+		/** Nomes dos mapas do veto, em ordem. Se ausente, usa "Mapa N". */
+		mapNames?: string[];
 		onDone: () => void;
 	} = $props();
 
 	const TICK = 300; // ms por round — cadência mais lenta e tensa
+	const TICK_EVENT = 800; // ms em rounds especiais (pausa extra para ler o badge)
 	const END_PAUSE = 1100; // beat no placar final antes de revelar o scoreboard
 	const reduced =
 		typeof window !== 'undefined' &&
 		window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+	type RoundEvent = 'pistol' | 'eco-win' | 'match-point' | 'overtime' | 'comeback';
+
+	interface EventInfo {
+		type: RoundEvent;
+		label: string;
+		color: string;
+	}
+
+	const EVENT_META: Record<RoundEvent, EventInfo> = {
+		pistol:       { type: 'pistol',       label: '🔫 Pistol Round',  color: 'var(--ct)' },
+		'eco-win':    { type: 'eco-win',       label: '💸 Eco Win!',      color: 'var(--win)' },
+		'match-point':{ type: 'match-point',   label: '⚔️ Match Point',   color: 'var(--accent)' },
+		overtime:     { type: 'overtime',      label: '⏱ Overtime!',      color: '#f6d860' },
+		comeback:     { type: 'comeback',      label: '🔄 Virada!',        color: 'var(--lurker)' }
+	};
+
+	function detectEvent(
+		roundIndex: number,
+		rounds: ('A' | 'B')[],
+		scoreA: number,
+		scoreB: number,
+		winner: 'A' | 'B'
+	): RoundEvent | null {
+		// Overtime: placar acabou de bater 12-12 antes deste round
+		if (scoreA === 12 && scoreB === 12) return 'overtime';
+		// Pistol: primeiro round de cada half regular ou início de OT
+		if (roundIndex === 0 || roundIndex === 12) return 'pistol';
+		// OT pistols (rounds 24, 27, 30, ...)
+		if (roundIndex >= 24 && (roundIndex - 24) % 6 === 0) return 'pistol';
+		// Match point: vencedor deste round chegaria a 12 pontos (próximo fecha)
+		const winnerScore = winner === 'A' ? scoreA : scoreB;
+		if (winnerScore === 11) return 'match-point';
+		// Eco win: winner perdeu os 3 rounds anteriores
+		const prev3 = rounds.slice(Math.max(0, roundIndex - 3), roundIndex);
+		if (prev3.length === 3 && prev3.every((w) => w !== winner)) return 'eco-win';
+		// Comeback: time que estava perdendo por 5+ pontos vence
+		const loserScore = winner === 'A' ? scoreB : scoreA;
+		if (loserScore - winnerScore >= 5) return 'comeback';
+		return null;
+	}
+
+	let currentEvent = $state<EventInfo | null>(null);
+	let eventTimer: ReturnType<typeof setTimeout> | undefined;
 
 	const maps = $derived(series.maps);
 	const userSide = $derived<'A' | 'B'>(userIsA ? 'A' : 'B');
@@ -75,32 +123,61 @@
 		mapIndex; // re-roda ao trocar de mapa
 		revealed = 0;
 		phase = 'playing';
+		currentEvent = null;
 		clearInterval(timer);
 		clearTimeout(endTimer);
-		const total = maps[mapIndex].rounds.length;
+		clearTimeout(eventTimer);
+		const curRounds = maps[mapIndex].rounds;
+		const total = curRounds.length;
 		if (reduced || total === 0) {
 			revealed = total;
 			phase = 'mapdone';
 			return;
 		}
-		timer = setInterval(() => {
+
+		function tick() {
+			const idx = revealed; // índice do round que acabou de ser revelado
 			revealed++;
+			// Placar antes deste round
+			const prevShown = curRounds.slice(0, idx);
+			const prevA = prevShown.filter((w) => w === 'A').length;
+			const prevB = prevShown.length - prevA;
+			const winner = curRounds[idx];
+			const evt = detectEvent(idx, curRounds.slice(0, idx), prevA, prevB, winner);
+			currentEvent = evt ? EVENT_META[evt] : null;
+
 			if (revealed >= total) {
-				revealed = total;
 				clearInterval(timer);
-				// segura o placar final por um instante antes do scoreboard
-				endTimer = setTimeout(() => (phase = 'mapdone'), END_PAUSE);
+				endTimer = setTimeout(() => {
+					currentEvent = null;
+					phase = 'mapdone';
+				}, END_PAUSE);
+				return;
 			}
-		}, TICK);
+
+			if (evt && !reduced) {
+				// Pausa extra para leitura do badge: parar o intervalo e retomar após delay
+				clearInterval(timer);
+				eventTimer = setTimeout(() => {
+					currentEvent = null;
+					timer = setInterval(tick, TICK);
+				}, TICK_EVENT);
+			}
+		}
+
+		timer = setInterval(tick, TICK);
 		return () => {
 			clearInterval(timer);
 			clearTimeout(endTimer);
+			clearTimeout(eventTimer);
 		};
 	});
 
 	function skip() {
 		clearInterval(timer);
 		clearTimeout(endTimer);
+		clearTimeout(eventTimer);
+		currentEvent = null;
 		revealed = curMap.rounds.length;
 		phase = 'mapdone';
 	}
@@ -145,7 +222,14 @@
 </script>
 
 <div class="live">
-	<p class="stage-tag">{stageLabel}{#if maps.length > 1} · Mapa {mapIndex + 1}{/if}</p>
+	<p class="stage-tag">
+		{stageLabel}
+		{#if maps.length > 1}
+			· {mapNames?.[mapIndex] ?? `Mapa ${mapIndex + 1}`}
+		{:else if mapNames?.[0]}
+			· {mapNames[0]}
+		{/if}
+	</p>
 
 	<div class="board-live" class:done={phase === 'mapdone'}>
 		<div class="team-side user">
@@ -162,6 +246,17 @@
 			<span class="tname">{opp.name}</span>
 		</div>
 	</div>
+
+	{#if currentEvent}
+		<div
+			class="round-event"
+			style="--evt-color: {currentEvent.color}"
+			role="status"
+			aria-live="polite"
+		>
+			{currentEvent.label}
+		</div>
+	{/if}
 
 	{#if maps.length > 1}
 		<p class="series-tally">Série {seriesTally.u}–{seriesTally.o}</p>
@@ -316,12 +411,40 @@
 		font-size: 1.05rem;
 	}
 
+	.round-event {
+		text-align: center;
+		font-family: var(--font-display);
+		font-size: 0.82rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--evt-color, var(--accent));
+		padding: 0.25rem 0.8rem;
+		background: color-mix(in srgb, var(--evt-color, var(--accent)) 12%, var(--panel-2));
+		border: 1px solid color-mix(in srgb, var(--evt-color, var(--accent)) 35%, transparent);
+		clip-path: polygon(
+			var(--cut-sm) 0, 100% 0,
+			100% calc(100% - var(--cut-sm)),
+			calc(100% - var(--cut-sm)) 100%,
+			0 100%, 0 var(--cut-sm)
+		);
+		animation: evt-in 0.18s ease forwards;
+	}
+
+	@keyframes evt-in {
+		from { opacity: 0; transform: translateY(-4px); }
+		to   { opacity: 1; transform: translateY(0); }
+	}
+
 	@media (prefers-reduced-motion: reduce) {
 		.num {
 			transition: none;
 		}
 		.num.pop {
 			transform: none;
+		}
+		.round-event {
+			animation: none;
 		}
 	}
 </style>

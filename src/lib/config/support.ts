@@ -11,5 +11,5 @@ export const PIX_QR_SRC = '/pix-qr.svg';
 export const KOFI_URL = '';
 
 /** AdSense: client (ex: 'ca-pub-XXXXXXXXXXXXXXXX') e slot (ex: '1234567890'). Vazios = sem anúncio. */
-export const ADSENSE_CLIENT = '';
-export const ADSENSE_SLOT = '';
+export const ADSENSE_CLIENT = 'ca-pub-7295597162305772';
+export const ADSENSE_SLOT = '6574391059';
