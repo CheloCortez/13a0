@@ -4,11 +4,31 @@ import type { Major, MajorIndexEntry } from './types';
 let indexCache: MajorIndexEntry[] | null = null;
 let majorsCache: Major[] | null = null;
 
+/** Busca um JSON com algumas tentativas e backoff — resiliente a falhas de rede pontuais. */
+async function fetchJson<T>(url: string, label: string, attempts = 3): Promise<T> {
+	let lastError: unknown;
+	for (let i = 0; i < attempts; i++) {
+		try {
+			const res = await fetch(url);
+			if (!res.ok) throw new Error(`HTTP ${res.status}`);
+			return (await res.json()) as T;
+		} catch (err) {
+			lastError = err;
+			if (i < attempts - 1) {
+				// backoff: 200ms, 400ms…
+				await new Promise((r) => setTimeout(r, 200 * 2 ** i));
+			}
+		}
+	}
+	throw new Error(`Falha ao carregar ${label}: ${String(lastError)}`);
+}
+
 export async function loadMajorsIndex(): Promise<MajorIndexEntry[]> {
 	if (!indexCache) {
-		const res = await fetch(`${base}/data/majors/index.json`);
-		if (!res.ok) throw new Error('Falha ao carregar o índice de majors');
-		indexCache = (await res.json()) as MajorIndexEntry[];
+		indexCache = await fetchJson<MajorIndexEntry[]>(
+			`${base}/data/majors/index.json`,
+			'o índice de majors'
+		);
 	}
 	return indexCache;
 }
@@ -18,11 +38,9 @@ export async function loadAllMajors(): Promise<Major[]> {
 	if (!majorsCache) {
 		const index = await loadMajorsIndex();
 		majorsCache = await Promise.all(
-			index.map(async (entry) => {
-				const res = await fetch(`${base}/data/majors/${entry.id}.json`);
-				if (!res.ok) throw new Error(`Falha ao carregar o major ${entry.id}`);
-				return (await res.json()) as Major;
-			})
+			index.map((entry) =>
+				fetchJson<Major>(`${base}/data/majors/${entry.id}.json`, `o major ${entry.id}`)
+			)
 		);
 	}
 	return majorsCache;

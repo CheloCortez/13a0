@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { base } from '$app/paths';
+	import Seo from '$lib/components/Seo.svelte';
 </script>
 
-<svelte:head>
-	<title>13 a 0 — como jogar</title>
-</svelte:head>
+<Seo
+	title="13 a 0 — como jogar"
+	description="Entenda as regras do 13 a 0: draft de 5 picks com elencos históricos dos Majors, funções, modificadores de força e a simulação do Major completo."
+	path="/sobre"
+/>
 
 <section>
 	<p class="tag">Briefing</p>

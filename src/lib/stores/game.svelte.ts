@@ -26,12 +26,43 @@ interface SavedGame {
 
 const STORAGE_KEY = '13a0:campanha';
 
+/** Acesso a localStorage tolerante a falhas (modo anônimo, quota cheia, storage desativado). */
+function safeGetItem(key: string): string | null {
+	if (!browser) return null;
+	try {
+		return localStorage.getItem(key);
+	} catch {
+		return null;
+	}
+}
+
+function safeSetItem(key: string, value: string): boolean {
+	if (!browser) return false;
+	try {
+		localStorage.setItem(key, value);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+function safeRemoveItem(key: string): void {
+	if (!browser) return;
+	try {
+		localStorage.removeItem(key);
+	} catch {
+		/* ignora — storage indisponível */
+	}
+}
+
 class GameStore {
 	majors = $state<Major[]>([]);
 	phase = $state<Phase>('draft');
 	draft = $state<DraftState | null>(null);
 	tournament = $state<TournamentResult | null>(null);
 	revealed = $state(0);
+	/** Verdadeiro quando o navegador recusou persistir o progresso (anônimo/quota). */
+	persistFailed = $state(false);
 
 	get mode(): GameMode {
 		return this.draft?.mode ?? 'classic';
@@ -100,7 +131,8 @@ class GameStore {
 		this.tournament = null;
 		this.phase = 'draft';
 		this.revealed = 0;
-		if (browser) localStorage.removeItem(STORAGE_KEY);
+		this.persistFailed = false;
+		safeRemoveItem(STORAGE_KEY);
 	}
 
 	/** O torneio é determinístico a partir da seed do draft — recomputável ao retomar. */
@@ -127,13 +159,13 @@ class GameStore {
 			draft: this.draft,
 			revealed: this.revealed
 		};
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+		// Em falha de escrita (anônimo/quota) o jogo segue em memória; só sinaliza a UI.
+		this.persistFailed = !safeSetItem(STORAGE_KEY, JSON.stringify(saved));
 	}
 
 	/** Retoma campanha salva; retorna false se não houver. */
 	load(): boolean {
-		if (!browser) return false;
-		const raw = localStorage.getItem(STORAGE_KEY);
+		const raw = safeGetItem(STORAGE_KEY);
 		if (!raw) return false;
 		try {
 			const saved = JSON.parse(raw) as SavedGame;
@@ -149,7 +181,7 @@ class GameStore {
 	}
 
 	get hasSavedGame(): boolean {
-		return browser && localStorage.getItem(STORAGE_KEY) !== null;
+		return safeGetItem(STORAGE_KEY) !== null;
 	}
 }
 

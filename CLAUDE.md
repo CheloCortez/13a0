@@ -33,6 +33,11 @@ npm run validate-data  # integridade dos JSONs de Majors
 
 Antes de declarar qualquer mudança pronta: `npm test && npm run check && npm run build`.
 
+## Deploy (IMPORTANTE)
+
+O push na branch `main` aciona deploy automático no Vercel — o site em produção é atualizado
+imediatamente. **Nunca fazer `git push` sem perguntar ao usuário antes.**
+
 ## Regras do jogo (estado atual — fonte da verdade é o engine)
 
 - **Draft livre em 5 picks**: cada pick sorteia um time real de um Major e o usuário escolhe

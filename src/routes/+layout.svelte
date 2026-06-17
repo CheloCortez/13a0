@@ -1,19 +1,23 @@
 <script lang="ts">
 	import '../app.css';
-	import favicon from '$lib/assets/favicon.svg';
 	import { base } from '$app/paths';
 	import { dev } from '$app/environment';
 	import { injectAnalytics } from '@vercel/analytics/sveltekit';
 	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
 
-	injectAnalytics({ mode: dev ? 'development' : 'production' });
+	// Amostra eventos de analytics para conter volume em picos de tráfego (15k+ simultâneos),
+	// mantendo Speed Insights (Web Vitals) integral.
+	const ANALYTICS_SAMPLE = 0.2;
+	injectAnalytics({
+		mode: dev ? 'development' : 'production',
+		beforeSend: (event) => (Math.random() < ANALYTICS_SAMPLE ? event : null)
+	});
 	injectSpeedInsights();
 
 	let { children } = $props();
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 </svelte:head>
 

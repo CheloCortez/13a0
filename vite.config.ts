@@ -11,7 +11,9 @@ export default defineConfig({
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
 
-			adapter: adapter()
+			// fallback: serve a página de erro temática (client-side) para URLs não prerenderizadas;
+			// a Vercel devolve 404.html em rotas inexistentes. Rotas conhecidas seguem prerenderizadas.
+			adapter: adapter({ fallback: '404.html' })
 		})
 	],
 	test: {

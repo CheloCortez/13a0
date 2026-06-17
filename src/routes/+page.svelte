@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { base } from '$app/paths';
-	import { browser } from '$app/environment';
+	import Seo from '$lib/components/Seo.svelte';
+	import { game } from '$lib/stores/game.svelte';
 
-	const hasSave = browser && localStorage.getItem('13a0:campanha') !== null;
+	const hasSave = game.hasSavedGame;
 
 	let mode = $state<'classic' | 'almanac'>('classic');
 
@@ -18,13 +19,11 @@
 	);
 </script>
 
-<svelte:head>
-	<title>13 a 0 — monte o time dos sonhos do Counter-Strike</title>
-	<meta
-		name="description"
-		content="Sorteie times históricos de todos os Majors de CS, monte seu time dos sonhos e tente vencer um mapa por 13 a 0."
-	/>
-</svelte:head>
+<Seo
+	title="13 a 0 — monte o time dos sonhos do Counter-Strike"
+	description="Sorteie times históricos de todos os Majors de CS, monte seu time dos sonhos e tente vencer um mapa por 13 a 0."
+	path="/"
+/>
 
 <section class="hero">
 	<p class="tag rise" style="--i: 0">O placar perfeito</p>

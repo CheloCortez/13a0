@@ -16,29 +16,41 @@
 	import { computeAchievements, shareText } from '$lib/engine/share';
 	import { game } from '$lib/stores/game.svelte';
 	import { loadAllMajors } from '$lib/data/loader';
+	import Seo from '$lib/components/Seo.svelte';
 
 	let ready = $state(false);
+	let loadError = $state(false);
 	let copied = $state(false);
 
-	onMount(async () => {
-		game.majors = await loadAllMajors();
+	async function boot() {
+		loadError = false;
+		try {
+			game.majors = await loadAllMajors();
+		} catch {
+			loadError = true;
+			return;
+		}
 
 		const params = page.url.searchParams;
 		const novo = params.get('novo');
 		const seedParam = params.get('seed');
-		const modeParam = (params.get('mode') ?? 'classic') as GameMode;
+		const modeRaw = params.get('mode');
+		const modeParam: GameMode = modeRaw === 'almanac' ? 'almanac' : 'classic';
 
 		if (novo === 'classic' || novo === 'almanac') {
 			game.start(novo);
 			goto(`${base}/jogo`, { replaceState: true });
 		} else if (seedParam) {
-			game.start(modeParam, Number(seedParam));
+			const seed = Number(seedParam);
+			game.start(modeParam, Number.isInteger(seed) && seed >= 0 ? seed : undefined);
 			goto(`${base}/jogo`, { replaceState: true });
 		} else if (!game.draft && !game.load()) {
 			game.start('classic');
 		}
 		ready = true;
-	});
+	}
+
+	onMount(boot);
 
 	/** Funções ainda sem dono no time parcial (slot = função efetiva) — guia os destaques. */
 	const vacantRoles = $derived(
@@ -148,7 +160,32 @@
 		}
 	}
 
-	function copyShare() {
+	/** Copia via Clipboard API com fallback para execCommand (HTTP, navegadores antigos, modo privado). */
+	async function writeClipboard(text: string): Promise<boolean> {
+		try {
+			if (navigator.clipboard?.writeText) {
+				await navigator.clipboard.writeText(text);
+				return true;
+			}
+		} catch {
+			/* cai no fallback abaixo */
+		}
+		try {
+			const ta = document.createElement('textarea');
+			ta.value = text;
+			ta.style.position = 'fixed';
+			ta.style.opacity = '0';
+			document.body.appendChild(ta);
+			ta.select();
+			const ok = document.execCommand('copy');
+			document.body.removeChild(ta);
+			return ok;
+		} catch {
+			return false;
+		}
+	}
+
+	async function copyShare() {
 		if (!game.tournament) return;
 		const url = `${page.url.origin}${base}/jogo?seed=${game.seed}&mode=${game.mode}`;
 		const text = `${shareText({
@@ -157,9 +194,10 @@
 			seed: game.seed,
 			mode: game.mode
 		})}\n${url}`;
-		navigator.clipboard.writeText(text);
-		copied = true;
-		setTimeout(() => (copied = false), 2000);
+		if (await writeClipboard(text)) {
+			copied = true;
+			setTimeout(() => (copied = false), 2000);
+		}
 	}
 
 	function playAgain(mode: GameMode) {
@@ -168,11 +206,27 @@
 	}
 </script>
 
-<svelte:head>
-	<title>13 a 0 — campanha</title>
-</svelte:head>
+<Seo
+	title="13 a 0 — campanha"
+	description="Faça o draft do seu time dos sonhos do CS e simule um Major inteiro — fase suíça e playoffs — em busca do 13 a 0."
+	path="/jogo"
+/>
 
-{#if !ready}
+{#if game.persistFailed}
+	<p class="persist-warn" role="status">
+		Seu progresso não está sendo salvo neste navegador (modo anônimo ou armazenamento cheio). Você
+		pode jogar normalmente, mas a campanha some ao fechar a aba.
+	</p>
+{/if}
+
+{#if loadError}
+	<section class="load-error">
+		<p class="tag">Ops</p>
+		<h2>Não foi possível carregar os Majors</h2>
+		<p class="muted">Verifique sua conexão e tente novamente.</p>
+		<button class="btn" onclick={boot}>Tentar de novo</button>
+	</section>
+{:else if !ready}
 	<p class="muted loading">Carregando os Majors…</p>
 {:else if game.phase === 'draft' && game.draft?.offer}
 	{@const offer = game.draft.offer}
@@ -339,6 +393,24 @@
 	.loading {
 		padding-top: 2rem;
 		text-align: center;
+	}
+
+	.load-error {
+		padding-top: 2.5rem;
+		text-align: center;
+	}
+
+	.load-error .btn {
+		margin-top: 1rem;
+	}
+
+	.persist-warn {
+		margin: 0.85rem 0 0;
+		padding: 0.6rem 0.8rem;
+		font-size: 0.82rem;
+		color: var(--text);
+		background: rgba(216, 124, 42, 0.12);
+		border-left: 3px solid var(--accent);
 	}
 
 	h2 {
