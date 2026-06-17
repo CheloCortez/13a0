@@ -17,6 +17,7 @@
 	import { game } from '$lib/stores/game.svelte';
 	import { loadAllMajors } from '$lib/data/loader';
 	import Seo from '$lib/components/Seo.svelte';
+	import { writeClipboard } from '$lib/clipboard';
 
 	let ready = $state(false);
 	let loadError = $state(false);
@@ -171,30 +172,6 @@
 	}
 
 	/** Copia via Clipboard API com fallback para execCommand (HTTP, navegadores antigos, modo privado). */
-	async function writeClipboard(text: string): Promise<boolean> {
-		try {
-			if (navigator.clipboard?.writeText) {
-				await navigator.clipboard.writeText(text);
-				return true;
-			}
-		} catch {
-			/* cai no fallback abaixo */
-		}
-		try {
-			const ta = document.createElement('textarea');
-			ta.value = text;
-			ta.style.position = 'fixed';
-			ta.style.opacity = '0';
-			document.body.appendChild(ta);
-			ta.select();
-			const ok = document.execCommand('copy');
-			document.body.removeChild(ta);
-			return ok;
-		} catch {
-			return false;
-		}
-	}
-
 	async function copyShare() {
 		if (!game.tournament) return;
 		const url = `${page.url.origin}${base}/jogo?seed=${game.seed}&mode=${game.mode}`;
