@@ -17,6 +17,8 @@
 	import { game } from '$lib/stores/game.svelte';
 	import { loadAllMajors } from '$lib/data/loader';
 	import Seo from '$lib/components/Seo.svelte';
+	import SupportBlock from '$lib/components/SupportBlock.svelte';
+	import AdSlot from '$lib/components/AdSlot.svelte';
 	import { writeClipboard } from '$lib/clipboard';
 
 	let ready = $state(false);
@@ -366,6 +368,8 @@
 				<button class="btn" onclick={copyShare}>
 					{copied ? '✓ Copiado!' : '📋 Copiar resultado'}
 				</button>
+				<SupportBlock compact />
+				<AdSlot />
 			</div>
 			<div class="again">
 				<button class="btn btn-ghost" onclick={() => playAgain('classic')}>Jogar de novo — Clássico</button>
