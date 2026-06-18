@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import Seo from '$lib/components/Seo.svelte';
-	import SupportBlock from '$lib/components/SupportBlock.svelte';
 </script>
 
 <Seo
@@ -80,22 +79,7 @@
 	<a class="btn back" href="{base}/">← Voltar</a>
 </section>
 
-<section>
-	<h2>Apoie o 13 a 0</h2>
-	<SupportBlock />
-	<p class="disclaimer">
-		Projeto de fã, sem fins lucrativos relevantes; não afiliado nem endossado pela Valve.
-		Counter-Strike e os nomes de jogadores e equipes pertencem aos seus respectivos detentores.
-	</p>
-</section>
-
 <style>
-	.disclaimer {
-		margin-top: 1.5rem;
-		font-size: 0.8rem;
-		color: var(--muted, #9aa7b4);
-	}
-
 	.tag {
 		margin: 1.1rem 0 0;
 	}

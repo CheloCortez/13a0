@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { base } from '$app/paths';
-	import { PIX_PAYLOAD, PIX_QR_SRC, KOFI_URL } from '$lib/config/support';
+	import { PIX_PAYLOAD, KOFI_URL } from '$lib/config/support';
 	import { writeClipboard } from '$lib/clipboard';
+	import pixQrRaw from '$lib/pix-qr.svg?raw';
 
 	let { compact = false }: { compact?: boolean } = $props();
 
@@ -37,15 +37,10 @@
 				<a class="btn kofi" href={KOFI_URL} target="_blank" rel="noopener">☕ Apoiar no Ko-fi</a>
 			{/if}
 		</div>
-		{#if hasPix && PIX_QR_SRC && !compact}
-			<img
-				class="qr"
-				src={`${base}${PIX_QR_SRC}`}
-				alt="QR code Pix para doação"
-				width="180"
-				height="180"
-				loading="lazy"
-			/>
+		{#if hasPix && !compact}
+			<div class="qr" role="img" aria-label="QR code Pix para doação">
+				{@html pixQrRaw}
+			</div>
 		{/if}
 	</section>
 {/if}
@@ -77,6 +72,7 @@
 		flex-wrap: wrap;
 		gap: 0.6rem;
 		align-items: center;
+		justify-content: center;
 	}
 	.btn {
 		display: inline-block;
@@ -104,9 +100,14 @@
 	}
 	.qr {
 		display: block;
-		margin-top: 1rem;
-		image-rendering: pixelated;
+		margin: 1rem auto 0;
 		background: #fff;
 		padding: 6px;
+		width: fit-content;
+	}
+	.qr :global(svg) {
+		display: block;
+		width: 180px;
+		height: 180px;
 	}
 </style>
