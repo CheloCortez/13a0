@@ -212,14 +212,13 @@
 	/** Copia via Clipboard API com fallback para execCommand (HTTP, navegadores antigos, modo privado). */
 	async function copyShare() {
 		if (!game.tournament || !game.draft) return;
-		const url = `${page.url.origin}${base}/jogo?seed=${game.seed}&mode=${game.mode}`;
-		const text = `${shareText({
+		const text = shareText({
 			finish: game.tournament.userFinish,
 			matches: game.tournament.userMatches,
 			seed: game.seed,
 			mode: game.mode,
 			picks: game.draft.picks
-		})}\n${url}`;
+		});
 		if (await writeClipboard(text)) {
 			copied = true;
 			setTimeout(() => (copied = false), 2000);
@@ -440,7 +439,7 @@
 				<button class="btn" onclick={copyShare}>
 					{copied ? '✓ Copiado!' : '📋 Copiar resultado'}
 				</button>
-				<SupportBlock compact />
+				<SupportBlock />
 				<AdSlot />
 			</div>
 			<div class="again">
