@@ -439,7 +439,7 @@
 				<button class="btn" onclick={copyShare}>
 					{copied ? '✓ Copiado!' : '📋 Copiar resultado'}
 				</button>
-				<SupportBlock />
+				<SupportBlock compact />
 				<AdSlot />
 			</div>
 			<div class="again">
