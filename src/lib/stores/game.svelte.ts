@@ -77,8 +77,12 @@ class GameStore {
 	revealed = $state(0);
 	/** Histórico acumulado do usuário por mapa neste torneio (salvo em SavedGame). */
 	userMapHistory = $state<MapRecord[]>([]);
-	/** Histórico dos times adversários por mapa — calculado, não salvo. */
-	private teamMapHistories: Record<string, MapRecord[]> = {};
+	/**
+	 * Resultados das partidas bot-vs-bot, cada um marcado com o estágio em que ocorreu —
+	 * calculado da seed, não salvo. Permite reconstruir o histórico de um time apenas até
+	 * um dado ponto da campanha (progressivo).
+	 */
+	private botMapResults: { teamId: string; mapId: string; won: boolean; stage: number }[] = [];
 	/** Verdadeiro quando o navegador recusou persistir o progresso (anônimo/quota). */
 	persistFailed = $state(false);
 	/** Modo difícil liberado após vencer um Major (persistido em localStorage). */
@@ -88,9 +92,20 @@ class GameStore {
 		this.hardUnlocked = readHardUnlocked();
 	}
 
-	/** Retorna o histórico acumulado do time oponente (partidas vs. bots, calculado). */
-	getOpponentHistory(teamId: string): MapRecord[] {
-		return this.teamMapHistories[teamId] ?? [];
+	/**
+	 * Histórico acumulado do time oponente apenas até (sem incluir) o estágio `beforeStage`.
+	 * Reflete só as partidas que o oponente já disputou antes do confronto atual — começa
+	 * vazio na primeira partida e cresce ao longo da campanha.
+	 */
+	getOpponentHistory(teamId: string, beforeStage: number): MapRecord[] {
+		const recs: MapRecord[] = [];
+		for (const r of this.botMapResults) {
+			if (r.teamId !== teamId || r.stage >= beforeStage) continue;
+			let rec = recs.find((x) => x.mapId === r.mapId);
+			if (!rec) { rec = { mapId: r.mapId, wins: 0, losses: 0 }; recs.push(rec); }
+			if (r.won) rec.wins++; else rec.losses++;
+		}
+		return recs;
 	}
 
 	/**
@@ -112,23 +127,21 @@ class GameStore {
 		this.save();
 	}
 
-	/** Calcula o histórico de mapas de todos os times (exceto user) a partir do torneio. */
-	private computeTeamMapHistories(): Record<string, MapRecord[]> {
-		if (!this.tournament || !this.draft) return {};
-		const histories: Record<string, MapRecord[]> = {};
+	/**
+	 * Calcula os resultados de mapas de todas as partidas bot-vs-bot do torneio, cada um
+	 * marcado com o estágio em que ocorreu (mesma indexação de `liveStageIndex`: rodadas
+	 * suíças 0..N-1, depois quartas, semis, final). Determinístico a partir da seed.
+	 */
+	private computeBotMapResults(): { teamId: string; mapId: string; won: boolean; stage: number }[] {
+		if (!this.tournament || !this.draft) return [];
+		const results: { teamId: string; mapId: string; won: boolean; stage: number }[] = [];
 		let matchIndex = 0;
-
-		const addResult = (teamId: string, mapId: string, won: boolean) => {
-			if (!histories[teamId]) histories[teamId] = [];
-			let rec = histories[teamId].find((r) => r.mapId === mapId);
-			if (!rec) { rec = { mapId, wins: 0, losses: 0 }; histories[teamId].push(rec); }
-			if (won) rec.wins++; else rec.losses++;
-		};
 
 		const processMatch = (
 			aId: string, bId: string,
 			series: SeriesResult,
-			bestOf: 1 | 3 | 5
+			bestOf: 1 | 3 | 5,
+			stage: number
 		) => {
 			// Seed única e determinística para cada partida bot-vs-bot
 			const seed = (this.draft!.seed ^ 0xcafebabe ^ (matchIndex * 0x6c62272e)) >>> 0;
@@ -138,25 +151,26 @@ class GameStore {
 			for (let i = 0; i < Math.min(selected.length, series.maps.length); i++) {
 				const mapId = selected[i].id;
 				const aWon = series.maps[i].winner === 'A';
-				addResult(aId, mapId, aWon);
-				addResult(bId, mapId, !aWon);
+				results.push({ teamId: aId, mapId, won: aWon, stage });
+				results.push({ teamId: bId, mapId, won: !aWon, stage });
 			}
 		};
 
 		const t = this.tournament;
-		for (const round of t.swiss.rounds) {
+		const swissCount = t.swiss.rounds.length;
+		t.swiss.rounds.forEach((round, r) => {
 			// Ordenação determinística dentro de cada rodada
 			const sorted = [...round.matches].sort((a, b) =>
 				(a.a.id + a.b.id).localeCompare(b.a.id + b.b.id)
 			);
-			for (const m of sorted) processMatch(m.a.id, m.b.id, m.series, m.bestOf);
-		}
+			for (const m of sorted) processMatch(m.a.id, m.b.id, m.series, m.bestOf, r);
+		});
 		if (t.playoffs) {
-			for (const m of t.playoffs.quarterfinals) processMatch(m.a.id, m.b.id, m.series, 3);
-			for (const m of t.playoffs.semifinals) processMatch(m.a.id, m.b.id, m.series, 3);
-			processMatch(t.playoffs.final.a.id, t.playoffs.final.b.id, t.playoffs.final.series, 5);
+			for (const m of t.playoffs.quarterfinals) processMatch(m.a.id, m.b.id, m.series, 3, swissCount);
+			for (const m of t.playoffs.semifinals) processMatch(m.a.id, m.b.id, m.series, 3, swissCount + 1);
+			processMatch(t.playoffs.final.a.id, t.playoffs.final.b.id, t.playoffs.final.series, 5, swissCount + 2);
 		}
-		return histories;
+		return results;
 	}
 
 	/** Libera o modo difícil ao terminar uma campanha como campeão (idempotente). */
@@ -185,7 +199,7 @@ class GameStore {
 		this.tournament = null;
 		this.revealed = 0;
 		this.userMapHistory = [];
-		this.teamMapHistories = {};
+		this.botMapResults = [];
 		this.save();
 	}
 
@@ -240,7 +254,7 @@ class GameStore {
 		this.phase = 'draft';
 		this.revealed = 0;
 		this.userMapHistory = [];
-		this.teamMapHistories = {};
+		this.botMapResults = [];
 		this.persistFailed = false;
 		safeRemoveItem(STORAGE_KEY);
 	}
@@ -258,7 +272,7 @@ class GameStore {
 			players: this.draft.picks.map((p) => ({ nick: p.nick, rating: effectiveRating(p) }))
 		};
 		this.tournament = simulateTournament(user, opponents, rng);
-		this.teamMapHistories = this.computeTeamMapHistories();
+		this.botMapResults = this.computeBotMapResults();
 	}
 
 	private save() {

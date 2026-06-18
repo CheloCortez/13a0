@@ -44,6 +44,14 @@
 	// Passo atual
 	const currentStep = $derived(steps[stepIndex] ?? null);
 
+	// Mapas selecionados (picks + decider) na ordem de jogo — disponível só após o decider existir
+	const selectedMaps = $derived.by((): CsMap[] => {
+		const decider = entries.find((e) => e.state === 'decider');
+		if (!decider) return [];
+		const pickedMaps = picked.map((id) => MAP_POOL.find((m) => m.id === id)!);
+		return bestOf === 1 ? [decider.map] : [...pickedMaps, decider.map];
+	});
+
 	// Aplica uma ação (ban ou pick) ao mapa indicado
 	function applyAction(mapId: string) {
 		const step = currentStep;
@@ -59,7 +67,7 @@
 		stepIndex++;
 	}
 
-	// Loop de animação / interação
+	// Loop de animação / interação dos passos do veto
 	$effect(() => {
 		if (done) return;
 
@@ -79,23 +87,23 @@
 			return () => clearTimeout(t);
 		}
 
-		// Todos os steps concluídos: definir decider
+		// Todos os steps concluídos: definir o decider e encerrar.
+		// (Não agendamos onDone aqui: mutar entries/done re-dispara este effect e o cleanup
+		//  cancelaria o timeout. A finalização fica num effect dedicado abaixo.)
 		if (remaining.length === 1) {
 			const deciderId = remaining[0];
 			const dIdx = entries.findIndex((e) => e.map.id === deciderId);
 			entries[dIdx] = { ...entries[dIdx], state: 'decider' as const, actor: null };
 		}
-
 		done = true;
 		phase = 'done';
+	});
 
-		const pickedMaps = picked.map((id) => MAP_POOL.find((m) => m.id === id)!);
-		const decider = entries.find((e) => e.state === 'decider');
-		const selectedMaps: CsMap[] = decider
-			? bestOf === 1 ? [decider.map] : [...pickedMaps, decider.map]
-			: pickedMaps;
-
-		const t = setTimeout(() => onDone(selectedMaps), DONE_PAUSE);
+	// Finalização: quando o veto encerra, entrega os mapas após uma breve pausa.
+	$effect(() => {
+		if (!done) return;
+		const maps = selectedMaps;
+		const t = setTimeout(() => onDone(maps), DONE_PAUSE);
 		return () => clearTimeout(t);
 	});
 
@@ -135,6 +143,18 @@
 <div class="veto" class:done>
 	<p class="stage-tag">Pick/Ban de mapas</p>
 	<p class="veto-header" class:user-turn={phase === 'user'}>{headerText}</p>
+
+	{#if !almanac}
+		<p class="hist-legend">
+			Histórico no Major:
+			<span class="legend-item user-legend">★ Seu time</span>
+			<span class="legend-item opp-legend">● {opponentName}</span>
+		</p>
+		<p class="veto-hint muted">
+			Cada vitória do seu time em um mapa vale +2% de força nele — e cada derrota, −2%.
+			Escolha bem seus picks.
+		</p>
+	{/if}
 
 	<div class="map-list">
 		{#each entries as entry (entry.map.id)}
@@ -238,6 +258,33 @@
 
 	.veto-header.user-turn {
 		color: var(--accent-bright);
+	}
+
+	.hist-legend {
+		margin: -0.15rem 0 0;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem;
+		font-family: var(--font-display);
+		font-size: 0.62rem;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+
+	.legend-item {
+		font-weight: 700;
+	}
+
+	.user-legend { color: var(--accent-bright); }
+	.opp-legend  { color: var(--ct); }
+
+	.veto-hint {
+		margin: -0.1rem 0 0;
+		font-size: 0.72rem;
+		line-height: 1.4;
 	}
 
 	.map-list {

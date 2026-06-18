@@ -57,19 +57,33 @@ imediatamente. **Nunca fazer `git push` sem perguntar ao usuário antes.**
 - **Modos**: *Clássico* (tudo visível, 3 re-sorteios) e *Almanaque* (jogo às cegas: ratings,
   funções dos jogadores, colocações dos times, modificadores e força ocultos; 1 re-sorteio).
   Ocultações condicionadas pelo derived `almanac` em `src/routes/jogo/+page.svelte` e pelas
-  props `hideRating`/`hideRoles` do `PlayerCard`.
+  props `hideRating`/`hideRoles` do `PlayerCard`. No modo Almanaque o `RoleBoard` exibe uma
+  bandeja de não-alocados (`showUnassignedTray`) para posicionamento manual antes de revelar.
+- **Veto de mapas** (`src/lib/engine/maps.ts`): antes de cada partida do torneio é executado
+  um veto com pool de 7 mapas (Mirage, Inferno, Ancient, Nuke, Anubis, Vertigo, Train).
+  Sequências reais: BO1 = 6 bans → decider; BO3 = ban ban pick pick ban ban → decider;
+  BO5 = ban ban pick pick pick pick → decider. O veto é resolvido automaticamente com LCG
+  determinístico derivado da seed — reproduzível. `MapVeto.svelte` exibe o resultado com
+  animação sequencial e thumbnails dos mapas.
+- **Histórico de mapas**: `MapRecord` acumula W/L por mapa ao longo do torneio para o
+  usuário (salvo em `SavedGame`) e para os adversários (calculado). `LiveMatch.svelte`
+  exibe esse histórico no painel de confronto com thumbnails dos mapas.
 
 ## Estrutura
 
 - `src/lib/engine/` — lógica pura e **testada** (`*.test.ts` ao lado de cada módulo): `rng`
   (PRNG com seed), `draft` (ofertas, picks, `assignSlots`, `swapSlots`), `strength`,
-  `match` (MR12 + séries), `tournament` (suíça + playoffs), `opponents`, `share`.
+  `match` (MR12 + séries), `tournament` (suíça + playoffs), `opponents`, `share`,
+  `maps` (pool de mapas, sequências de veto, `autoResolveVeto`, `MapRecord`).
   Mudança de regra começa por aqui, com teste antes da implementação.
 - `src/lib/stores/game.svelte.ts` — orquestração do fluxo (draft → review → tournament →
-  result) + persistência. O torneio é recomputado da seed ao retomar um save.
+  result) + persistência. Inclui `updateUserMapHistory()` (acumula W/L por mapa ao longo
+  do torneio) e cálculo derivado do histórico de mapas dos adversários. O torneio é
+  recomputado da seed ao retomar um save.
 - `src/lib/components/` — `PlayerCard`, `TeamCard`, `TeamChip`, `SwissBoard` (quadro estilo
-  Pick'Em), `ModifierList` (penalidades/bônus).
-- `src/routes/` — home, `/jogo` (fluxo principal, inclui o drag and drop), `/sobre`.
+  Pick'Em), `ModifierList` (penalidades/bônus), `MapVeto` (veto animado com imagens dos
+  mapas), `LiveMatch` (exibe histórico de mapas do confronto em andamento).
+- `src/routes/` — home, `/jogo` (fluxo principal, inclui o drag and drop e o veto), `/sobre`.
 - `static/data/majors/` — um JSON por Major (`index.json` é o catálogo). Times com 5
   jogadores: `{ nick, role, role2?, rating }`, rating estilo HLTV (~0.80–1.45). Os ratings
   são granulares/variados por jogador-no-major, gerados por um **spread procedural
@@ -77,6 +91,8 @@ imediatamente. **Nunca fazer `git push` sem perguntar ao usuário antes.**
   dados reais do HLTV (a fonte real exige scraping bloqueado/contra ToS); o script preserva
   o ordenamento e a formatação. É migração de mão única (re-rodar comporia o efeito). Para
   adicionar um Major: criar o JSON, registrar no `index.json`, rodar `npm run validate-data`.
+- `static/maps/` — thumbnails dos 7 mapas do pool (ancient, anubis, inferno, mirage, nuke,
+  train, vertigo) usados pelo `MapVeto.svelte`.
 
 ## Design system (CS2/HLTV)
 

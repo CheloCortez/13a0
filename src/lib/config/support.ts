@@ -1,5 +1,13 @@
 // Configuração de monetização. Campos vazios fazem a UI esconder o respectivo elemento.
 
+/**
+ * Número WhatsApp para contato de anunciantes.
+ * Formato: código do país + DDD + número, sem +, espaços ou traços.
+ * Exemplo (SP): '5511999999999'
+ * Vazio = link de contato mostra '#' (colunas de anúncio ainda aparecem).
+ */
+export const WHATSAPP_NUMBER = '5511955771210';
+
 /** Payload "Pix Copia e Cola" (BR Code/EMV) gerado pelo banco a partir da chave aleatória. */
 export const PIX_PAYLOAD =
 	'00020126580014BR.GOV.BCB.PIX0136b1c7adf2-7ade-44c5-9fcd-e406fb6b0c0f5204000053039865802BR5923Marcelo Cortez Monteiro6009SAO PAULO62140510fDt5sjmTEY63044FDD';

@@ -28,6 +28,7 @@
 			<span class="wordmark">Treze a Zero</span>
 		</a>
 		<a class="nav-link" href="{base}/sobre">Como jogar</a>
+		<a class="nav-link" href="{base}/contato">Contato</a>
 	</nav>
 </header>
 

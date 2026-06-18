@@ -11,7 +11,7 @@
 
 	const MODES: { id: Mode; label: string }[] = [
 		{ id: 'classic', label: 'Clássico' },
-		{ id: 'almanac', label: 'Almanaque' },
+		{ id: 'almanac', label: 'Às cegas' },
 		{ id: 'hard', label: 'Difícil' }
 	];
 
@@ -84,7 +84,7 @@
 					role="radio"
 					aria-checked={mode === m.id}
 					disabled={locked}
-					title={locked ? 'Vença um Major no Clássico ou Almanaque para desbloquear' : undefined}
+					title={locked ? 'Vença um Major no Clássico ou Às cegas para desbloquear' : undefined}
 					onclick={() => select(m.id)}
 				>
 					<span class="mode-name">
@@ -482,4 +482,5 @@
 			animation: none;
 		}
 	}
+
 </style>

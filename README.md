@@ -6,7 +6,9 @@ Jogo de browser inspirado no [7 a 0](https://7a0.com.br) (simulador de Copa que 
 
 - **Draft em 5 rodadas** — cada rodada sorteia um time real de um Major (2013 em diante) e você escala um jogador para a função da vez: AWPer, IGL, Entry, Lurker e Suporte. Escalar fora da função natural penaliza o rating em 15%.
 - **Dois modos** — *Clássico* (ratings visíveis, 3 re-sorteios) e *Almanaque* (ratings ocultos, 1 re-sorteio).
+- **Veto de mapas** — antes de cada partida, ban/picks reais (BO1/BO3/BO5) sobre o pool de 7 mapas atuais do CS2, com animação sequencial e thumbnails.
 - **O Major** — formato real: fase suíça de 16 times (decisões em MD3) + playoffs de 8 em MD3, mapas simulados round a round no MR12 com overtime.
+- **Histórico de mapas** — acompanhe suas vitórias e derrotas em cada mapa ao longo do torneio.
 - **Compartilhamento** — resultado em grid de emojis estilo Wordle + link com a seed, que reproduz a campanha exata.
 
 100% estático: sem backend, sem cadastro. Estado em `localStorage`, simulação determinística por seed no cliente.
@@ -27,7 +29,7 @@ npm run preview        # servir o build localmente
 
 ## Estrutura
 
-- `src/lib/engine/` — lógica pura e testada: `rng` (PRNG com seed), `draft`, `strength` (força/penalidades/sinergia), `match` (MR12 + séries), `tournament` (suíça + playoffs), `opponents`, `share` (conquistas + texto de compartilhamento).
+- `src/lib/engine/` — lógica pura e testada: `rng` (PRNG com seed), `draft`, `strength` (força/penalidades/sinergia), `match` (MR12 + séries), `tournament` (suíça + playoffs), `opponents`, `share` (conquistas + texto de compartilhamento), `maps` (pool de mapas, sequências de veto, `autoResolveVeto`).
 - `src/lib/stores/game.svelte.ts` — orquestração do fluxo + persistência.
 - `src/routes/` — home, `/jogo` (fluxo principal) e `/sobre`.
 - `static/data/majors/` — um JSON por Major (`index.json` é o catálogo). Cada Major traz **apenas os 8 times que chegaram aos playoffs** (Champions Stage / stage 3) daquele Major — só elencos memoráveis, sem times de fase de grupos. Times com 5 jogadores: `{ nick, role, role2?, rating }`, rating em escala estilo HLTV (0.85–1.35).

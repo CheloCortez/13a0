@@ -52,8 +52,8 @@
 				</div>
 				<span class="col">K-D</span>
 				<span class="col">ADR</span>
-				<span class="col">KAST</span>
-				<span class="col rat">Rating 3.0</span>
+				<span class="col col-kast">KAST</span>
+				<span class="col rat"><span class="rat-full">Rating 3.0</span><span class="rat-short">RTG</span></span>
 			</div>
 			{#each sortRows(team.players) as p (p.nick)}
 				<div class="prow">
@@ -67,7 +67,7 @@
 					</span>
 					<span class="col kd">{p.kills}-{p.deaths}</span>
 					<span class="col">{p.adr.toFixed(1)}</span>
-					<span class="col">{p.kast.toFixed(1)}%</span>
+					<span class="col col-kast">{p.kast.toFixed(1)}%</span>
 					<span class="col rat" class:up={p.rating3 >= 1} class:down={p.rating3 < 1}>{p.rating3.toFixed(2)}</span>
 				</div>
 			{/each}
@@ -79,7 +79,6 @@
 	.scoreboard {
 		border: 1px solid var(--border);
 		background: var(--panel);
-		overflow-x: auto;
 	}
 
 	.caption {
@@ -95,9 +94,7 @@
 		border-bottom: 1px solid var(--border);
 	}
 
-	.team {
-		min-width: 21rem;
-	}
+	.rat-short { display: none; }
 
 	.team + .team {
 		border-top: 2px solid var(--border-strong);
@@ -242,5 +239,35 @@
 
 	.col.rat {
 		font-weight: 700;
+	}
+
+	@media (max-width: 480px) {
+		.thead,
+		.prow {
+			grid-template-columns: minmax(5rem, 1fr) 3rem 2.8rem 3.5rem;
+			padding: 0.2rem 0.45rem;
+			gap: 0.15rem;
+		}
+
+		.col-kast { display: none; }
+
+		.rat-full  { display: none; }
+		.rat-short { display: inline; }
+
+		.pphoto {
+			width: 1.4rem;
+			height: 1.4rem;
+		}
+
+		.pnick { font-size: 0.76rem; }
+
+		.col { font-size: 0.74rem; }
+
+		.thead .col { font-size: 0.6rem; }
+
+		.caption {
+			font-size: 0.7rem;
+			padding: 0.3rem 0.45rem;
+		}
 	}
 </style>

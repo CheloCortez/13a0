@@ -320,6 +320,73 @@
 		transition: box-shadow 0.12s, border-color 0.12s;
 	}
 
+	/* ===== Layout vertical no mobile ===== */
+	@media (max-width: 480px) {
+		.board {
+			grid-template-columns: 1fr;
+			gap: 0.3rem;
+			margin-top: 0.5rem;
+		}
+
+		.bin {
+			flex-direction: row;
+			align-items: center;
+			min-height: unset;
+			padding: 0.3rem 0.5rem;
+			gap: 0.5rem;
+		}
+
+		.bin-head {
+			flex-direction: column;
+			align-items: flex-start;
+			justify-content: center;
+			margin-bottom: 0;
+			flex-shrink: 0;
+			width: 3.4rem;
+		}
+
+		.bin-count { display: none; }
+
+		.bin-body {
+			flex-direction: row;
+			flex-wrap: wrap;
+			gap: 0.3rem;
+			flex: 1;
+		}
+
+		.bin .chip {
+			width: auto;
+			padding: 0.18rem 0.35rem 0.18rem 0.2rem;
+		}
+
+		.chip-portrait {
+			width: 1.6rem;
+			height: 1.6rem;
+		}
+
+		.chip-nick { font-size: 0.76rem; }
+		.chip-nat  { display: none; }
+		.chip-rating { font-size: 0.7rem; }
+
+		.empty {
+			font-size: 0.66rem;
+			padding: 0.15rem 0;
+		}
+
+		.tray {
+			padding: 0.35rem 0.5rem;
+		}
+
+		.tray .chip {
+			width: auto;
+			padding: 0.18rem 0.35rem 0.18rem 0.2rem;
+		}
+
+		.tray-slots { gap: 0.3rem; }
+
+		.hint { font-size: 0.72rem; }
+	}
+
 	.board.has-selection .bin {
 		border-top-color: color-mix(in srgb, var(--accent) 60%, var(--border-strong));
 		cursor: pointer;
