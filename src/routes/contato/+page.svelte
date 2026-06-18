@@ -4,7 +4,6 @@
 
 	const WA_NUMBER    = '5511955771210';
 	const WA_URL       = `https://wa.me/${WA_NUMBER}?text=Ol%C3%A1%2C+vim+pelo+site+13+a+0!`;
-	const LINKEDIN_URL = 'https://www.linkedin.com/in/marcelo-cortez-monteiro/';
 	const INSTAGRAM_URL = 'https://www.instagram.com/jogo13a0/';
 </script>
 
@@ -34,20 +33,6 @@
 			<div class="card-body">
 				<span class="card-label">WhatsApp</span>
 				<span class="card-desc">Feedback, bugs ou parcerias — resposta mais rápida por aqui.</span>
-			</div>
-			<span class="card-arrow" aria-hidden="true">→</span>
-		</a>
-
-		<a class="card li" href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer">
-			<div class="card-icon">
-				<!-- LinkedIn -->
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-					<path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-				</svg>
-			</div>
-			<div class="card-body">
-				<span class="card-label">LinkedIn</span>
-				<span class="card-desc">Conheça meu trabalho ou conecte-se profissionalmente.</span>
 			</div>
 			<span class="card-arrow" aria-hidden="true">→</span>
 		</a>
@@ -128,15 +113,6 @@
 		border-left-color: #25d366;
 	}
 
-	.card.li {
-		border-left-color: #0a66c2;
-	}
-
-	.card.li:hover {
-		border-color: color-mix(in srgb, #0a66c2 40%, var(--border));
-		border-left-color: #0a66c2;
-	}
-
 	.card.ig {
 		border-left-color: #e1306c;
 	}
@@ -157,7 +133,6 @@
 	}
 
 	.card.wa .card-icon { color: #25d366; }
-	.card.li .card-icon { color: #0a66c2; }
 	.card.ig .card-icon { color: #e1306c; }
 
 	.card-icon svg {
@@ -182,7 +157,6 @@
 	}
 
 	.card.wa .card-label { color: #25d366; }
-	.card.li .card-label { color: #5b9bd5; }
 	.card.ig .card-label { color: #e1306c; }
 
 	.card-desc {
