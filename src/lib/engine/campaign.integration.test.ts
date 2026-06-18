@@ -40,7 +40,8 @@ describe('campanha completa com os dados reais', () => {
 			finish: result.userFinish,
 			matches: result.userMatches,
 			seed: draft.seed,
-			mode: 'classic'
+			mode: 'classic',
+			picks: draft.picks
 		});
 		expect(text).toContain('#2026');
 		expect(computeAchievements(result.userMatches)).toBeDefined();

@@ -84,7 +84,7 @@
 	const allAssigned = $derived(game.draft?.picks.every((p) => p.slot !== null) ?? true);
 	const hideRatings = $derived(blind && game.phase === 'draft');
 	const modeLabel = $derived(
-		game.mode === 'classic' ? 'Clássico' : game.mode === 'hard' ? 'Difícil' : 'Almanaque'
+		game.mode === 'classic' ? 'Clássico' : game.mode === 'hard' ? 'Difícil' : 'Às cegas'
 	);
 
 	const achievements = $derived(
@@ -211,13 +211,14 @@
 
 	/** Copia via Clipboard API com fallback para execCommand (HTTP, navegadores antigos, modo privado). */
 	async function copyShare() {
-		if (!game.tournament) return;
+		if (!game.tournament || !game.draft) return;
 		const url = `${page.url.origin}${base}/jogo?seed=${game.seed}&mode=${game.mode}`;
 		const text = `${shareText({
 			finish: game.tournament.userFinish,
 			matches: game.tournament.userMatches,
 			seed: game.seed,
-			mode: game.mode
+			mode: game.mode,
+			picks: game.draft.picks
 		})}\n${url}`;
 		if (await writeClipboard(text)) {
 			copied = true;
@@ -370,7 +371,7 @@
 						rngSeed={vetoSeed}
 						mapHistory={{
 							user: game.userMapHistory,
-							opponent: game.getOpponentHistory(liveProps.oppLogoKey)
+							opponent: game.getOpponentHistory(liveProps.oppLogoKey, liveStageIndex ?? 0)
 						}}
 						almanac={blind}
 						onDone={(maps) => { vetoMaps = maps; }}
@@ -444,7 +445,7 @@
 			</div>
 			<div class="again">
 				<button class="btn btn-ghost" onclick={() => playAgain('classic')}>Jogar de novo — Clássico</button>
-				<button class="btn btn-ghost" onclick={() => playAgain('almanac')}>Jogar de novo — Almanaque</button>
+				<button class="btn btn-ghost" onclick={() => playAgain('almanac')}>Jogar de novo — Às cegas</button>
 				{#if game.hardUnlocked}
 					<button class="btn btn-ghost" onclick={() => playAgain('hard')}>Jogar de novo — Difícil</button>
 				{/if}

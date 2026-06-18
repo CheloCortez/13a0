@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest';
+import type { DraftedPlayer } from '$lib/data/types';
 import type { UserMatch } from './tournament';
 import { computeAchievements, shareText } from './share';
 
@@ -22,6 +23,19 @@ function match(opts: { won: boolean; maps: [number, number][]; userIsA?: boolean
 			winner: 'A'
 		}
 	};
+}
+
+// Helpers de picks fictícios para os testes
+function makePicks(nicks: string[]): DraftedPlayer[] {
+	return nicks.map((nick, i) => ({
+		nick,
+		role: 'entry' as const,
+		rating: 1.0,
+		slot: 'entry' as const,
+		teamName: 'Time Fictício',
+		majorId: 'test-major',
+		majorName: 'Test Major'
+	}));
 }
 
 describe('computeAchievements', () => {
@@ -66,21 +80,96 @@ describe('shareText', () => {
 				match({ won: true, maps: [[13, 2]] })
 			],
 			seed: 42,
-			mode: 'classic'
+			mode: 'classic',
+			picks: makePicks(['s1mple', 'NiKo', 'device', 'karrigan', 'KSCERATO'])
 		});
 		expect(text).toContain('🟩🟥🟩');
 	});
 
-	test('inclui o resultado, a seed e a conquista de mapa perfeito', () => {
+	test('inclui o resultado, a seed e o modo', () => {
 		const text = shareText({
 			finish: 'campeão',
 			matches: [match({ won: true, maps: [[13, 0]] })],
 			seed: 99,
-			mode: 'almanac'
+			mode: 'almanac',
+			picks: makePicks(['s1mple', 'NiKo', 'device', 'karrigan', 'KSCERATO'])
 		});
 		expect(text).toContain('CAMPEÃO');
 		expect(text).toContain('#99');
-		expect(text).toContain('13 a 0');
-		expect(text.toLowerCase()).toContain('almanaque');
+		expect(text.toLowerCase()).toContain('às cegas');
+	});
+
+	test('inclui os nicks dos jogadores separados por ·', () => {
+		const text = shareText({
+			finish: 'campeão',
+			matches: [match({ won: true, maps: [[13, 7]] })],
+			seed: 1,
+			mode: 'classic',
+			picks: makePicks(['s1mple', 'NiKo', 'device', 'karrigan', 'KSCERATO'])
+		});
+		expect(text).toContain('s1mple · NiKo · device · karrigan · KSCERATO');
+	});
+
+	test('inclui o link fixo jogar13a0.com.br', () => {
+		const text = shareText({
+			finish: 'quartas',
+			matches: [match({ won: false, maps: [[5, 13]] })],
+			seed: 7,
+			mode: 'classic',
+			picks: makePicks(['s1mple', 'NiKo', 'device', 'karrigan', 'KSCERATO'])
+		});
+		expect(text).toContain('jogar13a0.com.br');
+	});
+
+	test('NÃO inclui mapa perfeito 13 a 0 no share', () => {
+		const text = shareText({
+			finish: 'campeão',
+			matches: [match({ won: true, maps: [[13, 0]] })],
+			seed: 5,
+			mode: 'classic',
+			picks: makePicks(['s1mple', 'NiKo', 'device', 'karrigan', 'KSCERATO'])
+		});
+		expect(text).not.toContain('13 a 0');
+		expect(text).not.toContain('perfeito');
+		expect(text).not.toContain('💎');
+	});
+
+	test('inclui 🔥 Campanha invicta apenas quando campeão invicto', () => {
+		const invicto = shareText({
+			finish: 'campeão',
+			matches: [
+				match({ won: true, maps: [[13, 7]] }),
+				match({ won: true, maps: [[13, 9]] })
+			],
+			seed: 2,
+			mode: 'classic',
+			picks: makePicks(['s1mple', 'NiKo', 'device', 'karrigan', 'KSCERATO'])
+		});
+		expect(invicto).toContain('🔥');
+
+		const naoInvicto = shareText({
+			finish: 'campeão',
+			matches: [
+				match({ won: true, maps: [[13, 7]] }),
+				match({ won: false, maps: [[5, 13]] }),
+				match({ won: true, maps: [[13, 9]] })
+			],
+			seed: 3,
+			mode: 'classic',
+			picks: makePicks(['s1mple', 'NiKo', 'device', 'karrigan', 'KSCERATO'])
+		});
+		expect(naoInvicto).not.toContain('🔥');
+	});
+
+	test('picks vazio não quebra o formato', () => {
+		expect(() =>
+			shareText({
+				finish: 'fase suíça',
+				matches: [match({ won: false, maps: [[5, 13]] })],
+				seed: 0,
+				mode: 'classic',
+				picks: []
+			})
+		).not.toThrow();
 	});
 });
