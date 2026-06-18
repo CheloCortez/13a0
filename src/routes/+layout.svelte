@@ -4,6 +4,7 @@
 	import { dev } from '$app/environment';
 	import { injectAnalytics } from '@vercel/analytics/sveltekit';
 	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
+	import CookieNotice from '$lib/components/CookieNotice.svelte';
 
 	// Amostra eventos de analytics para conter volume em picos de tráfego (15k+ simultâneos),
 	// mantendo Speed Insights (Web Vitals) integral.
@@ -35,6 +36,17 @@
 <main>
 	{@render children()}
 </main>
+
+<footer>
+	<nav class="foot-nav">
+		<a href="{base}/sobre">Como jogar</a>
+		<a href="{base}/contato">Contato</a>
+		<a href="{base}/privacidade">Privacidade</a>
+	</nav>
+	<p class="foot-note">Projeto de fã, sem afiliação com a Valve.</p>
+</footer>
+
+<CookieNotice />
 
 <style>
 	header {
@@ -120,5 +132,40 @@
 		.wordmark {
 			display: none;
 		}
+	}
+
+	footer {
+		border-top: 1px solid var(--border);
+		margin-top: 2.5rem;
+		padding: 1.4rem clamp(0.85rem, 3vw, 1.25rem) 2rem;
+		text-align: center;
+	}
+
+	.foot-nav {
+		display: flex;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 0.4rem 1.4rem;
+	}
+
+	.foot-nav a {
+		font-family: var(--font-display);
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		color: var(--muted);
+		text-decoration: none;
+		transition: color 0.15s;
+	}
+
+	.foot-nav a:hover {
+		color: var(--accent-bright);
+	}
+
+	.foot-note {
+		margin: 0.9rem 0 0;
+		font-size: 0.78rem;
+		color: var(--muted);
 	}
 </style>

@@ -12,9 +12,6 @@ export const WHATSAPP_NUMBER = '5511955771210';
 export const PIX_PAYLOAD =
 	'00020126580014BR.GOV.BCB.PIX0136b1c7adf2-7ade-44c5-9fcd-e406fb6b0c0f5204000053039865802BR5923Marcelo Cortez Monteiro6009SAO PAULO62140510fDt5sjmTEY63044FDD';
 
-/** Caminho (em static/) do QR gerado a partir do PIX_PAYLOAD. Vazio = sem imagem de QR. */
-export const PIX_QR_SRC = '/pix-qr.svg';
-
 /** URL do perfil/página Ko-fi. Vazio = esconde o botão. */
 export const KOFI_URL = '';
 
