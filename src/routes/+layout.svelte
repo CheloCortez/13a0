@@ -28,6 +28,7 @@
 			<span class="mark" aria-hidden="true">13<i>:</i>0</span>
 			<span class="wordmark">Treze a Zero</span>
 		</a>
+		<a class="nav-link" href="{base}/majors">Majors</a>
 		<a class="nav-link" href="{base}/sobre">Como jogar</a>
 		<a class="nav-link" href="{base}/contato">Contato</a>
 	</nav>
@@ -39,6 +40,8 @@
 
 <footer>
 	<nav class="foot-nav">
+		<a href="{base}/majors">Majors</a>
+		<a href="{base}/campeoes">Campeões</a>
 		<a href="{base}/sobre">Como jogar</a>
 		<a href="{base}/contato">Contato</a>
 		<a href="{base}/privacidade">Privacidade</a>
