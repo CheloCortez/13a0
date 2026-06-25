@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import Seo from '$lib/components/Seo.svelte';
+	import JsonLd from '$lib/components/JsonLd.svelte';
+	import { SITE_URL, SITE_NAME, OG_IMAGE } from '$lib/seo';
 	import { game } from '$lib/stores/game.svelte';
 
 	const hasSave = game.hasSavedGame;
@@ -26,6 +28,27 @@
 		hard: 'Só campeões de Major no draft e como adversários, e tudo às cegas. O teste final.'
 	};
 
+	const jsonLd = {
+		'@context': 'https://schema.org',
+		'@graph': [
+			{ '@type': 'WebSite', name: SITE_NAME, url: SITE_URL, inLanguage: 'pt-BR' },
+			{
+				'@type': 'VideoGame',
+				name: SITE_NAME,
+				url: SITE_URL,
+				applicationCategory: 'Game',
+				operatingSystem: 'Navegador web',
+				genre: 'Simulação',
+				gamePlatform: 'Web',
+				inLanguage: 'pt-BR',
+				image: OG_IMAGE,
+				description:
+					'Sorteie elencos históricos dos Majors de Counter-Strike, monte o time dos sonhos e simule um Major inteiro.',
+				offers: { '@type': 'Offer', price: '0', priceCurrency: 'BRL' }
+			}
+		]
+	};
+
 	function select(id: Mode) {
 		if (id === 'hard' && !hardUnlocked) return;
 		mode = id;
@@ -37,6 +60,8 @@
 	description="Sorteie times históricos de todos os Majors de CS, monte seu time dos sonhos e tente vencer um mapa por 13 a 0."
 	path="/"
 />
+
+<JsonLd data={jsonLd} />
 
 <section class="hero">
 	<div class="cs2-bg" aria-hidden="true">
