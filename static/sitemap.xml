@@ -1,23 +1,96 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 	<url>
-		<loc>https://jogar13a0.com.br/</loc>
-		<changefreq>weekly</changefreq>
-		<priority>1.0</priority>
+		<loc>https://jogar13a0.com.br</loc>
 	</url>
 	<url>
 		<loc>https://jogar13a0.com.br/jogo</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://jogar13a0.com.br/sobre</loc>
-		<changefreq>monthly</changefreq>
-		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/contato</loc>
 	</url>
 	<url>
 		<loc>https://jogar13a0.com.br/privacidade</loc>
-		<changefreq>yearly</changefreq>
-		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/campeoes</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/dh-winter-2013</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/katowice-2014</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/cologne-2014</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/dh-winter-2014</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/katowice-2015</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/cologne-2015</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/cluj-2015</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/columbus-2016</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/cologne-2016</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/atlanta-2017</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/krakow-2017</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/boston-2018</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/london-2018</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/katowice-2019</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/berlin-2019</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/stockholm-2021</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/antwerp-2022</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/rio-2022</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/paris-2023</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/copenhagen-2024</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/shanghai-2024</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/austin-2025</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/budapest-2025</loc>
+	</url>
+	<url>
+		<loc>https://jogar13a0.com.br/majors/cologne-2026</loc>
 	</url>
 </urlset>
