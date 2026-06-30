@@ -112,6 +112,7 @@ export function pick(state: DraftState, majors: Major[], nick: string): DraftSta
 	const drafted: DraftedPlayer = {
 		...player,
 		slot: blind ? null : player.role,
+		teamId: state.offer.team.id,
 		teamName: state.offer.team.name,
 		majorId: state.offer.majorId,
 		majorName: state.offer.majorName

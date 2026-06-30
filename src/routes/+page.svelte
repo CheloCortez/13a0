@@ -28,6 +28,25 @@
 		hard: 'Só campeões de Major no draft e como adversários, e tudo às cegas. O teste final.'
 	};
 
+	const FAQ: { q: string; a: string }[] = [
+		{
+			q: 'O que significa 13 a 0 no CS?',
+			a: 'No Counter-Strike, 13 a 0 é o placar perfeito: vencer um mapa sem deixar o adversário levar um único round. É a maior demonstração de domínio no CS — e o objetivo máximo deste jogo.'
+		},
+		{
+			q: 'O que é o jogo 13 a 0?',
+			a: 'É um jogo de browser gratuito com tema de Counter-Strike. Você sorteia elencos históricos dos Majors de CS, monta seu time dos sonhos no draft e simula um Major inteiro (fase suíça e playoffs), tentando vencer um mapa por 13 a 0.'
+		},
+		{
+			q: 'Como funciona o draft?',
+			a: 'A cada uma das 5 rodadas o jogo sorteia um time real de algum Major de CS e você escolhe um jogador dele para a sua equipe. No fim, você monta uma escalação com craques de épocas e times diferentes.'
+		},
+		{
+			q: 'Preciso instalar ou pagar algo?',
+			a: 'Não. O 13 a 0 roda direto no navegador, é de graça e não exige cadastro nem instalação. Sua campanha fica salva no próprio navegador.'
+		}
+	];
+
 	const jsonLd = {
 		'@context': 'https://schema.org',
 		'@graph': [
@@ -35,6 +54,7 @@
 			{
 				'@type': 'VideoGame',
 				name: SITE_NAME,
+				alternateName: ['13 a 0 CS', '13 a 0 Counter-Strike'],
 				url: SITE_URL,
 				applicationCategory: 'Game',
 				operatingSystem: 'Navegador web',
@@ -42,9 +62,19 @@
 				gamePlatform: 'Web',
 				inLanguage: 'pt-BR',
 				image: OG_IMAGE,
+				keywords: '13 a 0, 13 a 0 cs, Counter-Strike, CS, CS2, Major, draft, simulador',
 				description:
-					'Sorteie elencos históricos dos Majors de Counter-Strike, monte o time dos sonhos e simule um Major inteiro.',
+					'Sorteie elencos históricos dos Majors de Counter-Strike, monte o time dos sonhos e simule um Major inteiro. O placar perfeito do CS: vencer um mapa por 13 a 0.',
 				offers: { '@type': 'Offer', price: '0', priceCurrency: 'BRL' }
+			},
+			{
+				'@type': 'FAQPage',
+				inLanguage: 'pt-BR',
+				mainEntity: FAQ.map((item) => ({
+					'@type': 'Question',
+					name: item.q,
+					acceptedAnswer: { '@type': 'Answer', text: item.a }
+				}))
 			}
 		]
 	};
@@ -56,8 +86,8 @@
 </script>
 
 <Seo
-	title="13 a 0 — monte o time dos sonhos do Counter-Strike"
-	description="Sorteie times históricos de todos os Majors de CS, monte seu time dos sonhos e tente vencer um mapa por 13 a 0."
+	title="13 a 0 — jogo de CS: monte o time dos sonhos e dispute o Major"
+	description="13 a 0 é o jogo de Counter-Strike onde você sorteia times históricos dos Majors de CS, monta o time dos sonhos e tenta vencer um mapa por 13 a 0. De graça, no navegador."
 	path="/"
 />
 
@@ -82,7 +112,8 @@
 	</h1>
 
 	<p class="tagline rise" style="--i: 2">
-		Escale o time dos sonhos e dispute o maior Major de todos os tempos.
+		<strong>13 a 0</strong> é o jogo de <strong>Counter-Strike</strong> onde você escala o time
+		dos sonhos e disputa o maior Major de todos os tempos.
 	</p>
 
 	{#if hasSave}
@@ -127,6 +158,33 @@
 
 	<a class="how rise" style="--i: 6" href="{base}/sobre">Como jogar →</a>
 	</div><!-- /hero-inner -->
+</section>
+
+<section class="about">
+	<div class="about-inner">
+		<h2 class="about-title">O que é o 13 a 0?</h2>
+		<p>
+			<strong>13 a 0</strong> é um jogo de browser gratuito com tema de
+			<strong>Counter-Strike</strong>. Você sorteia elencos históricos de todos os Majors de
+			<strong>CS</strong>, monta o seu time dos sonhos em um draft de cinco escolhas e simula um
+			Major inteiro — fase suíça e playoffs — contra adversários reais da história do CS.
+		</p>
+		<p>
+			O nome vem do placar perfeito do Counter-Strike: vencer um mapa por <strong>13 a 0</strong>,
+			sem deixar o rival levar um único round. É a glória máxima e o objetivo do jogo. Tudo roda no
+			navegador, sem instalar nada e sem cadastro.
+		</p>
+
+		<h2 class="about-title">Perguntas frequentes</h2>
+		<div class="faq">
+			{#each FAQ as item (item.q)}
+				<details>
+					<summary>{item.q}</summary>
+					<p>{item.a}</p>
+				</details>
+			{/each}
+		</div>
+	</div>
 </section>
 
 <style>
@@ -508,4 +566,90 @@
 		}
 	}
 
+	/* ===== Conteúdo / SEO ===== */
+	.about {
+		position: relative;
+		z-index: 1;
+		padding: 1rem 1rem 3rem;
+	}
+
+	.about-inner {
+		max-width: 720px;
+		margin: 0 auto;
+	}
+
+	.about-title {
+		font-family: var(--font-display);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		font-size: 1.15rem;
+		margin: 1.6rem 0 0.7rem;
+		padding-left: 0.7rem;
+		border-left: 3px solid var(--accent);
+	}
+
+	.about p {
+		color: var(--muted);
+		line-height: 1.6;
+		margin: 0 0 0.8rem;
+	}
+
+	.about strong {
+		color: var(--text);
+	}
+
+	.faq {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.faq details {
+		background: var(--panel);
+		box-shadow: inset 0 0 0 1px var(--border);
+		clip-path: polygon(
+			var(--cut-sm) 0,
+			100% 0,
+			100% calc(100% - var(--cut-sm)),
+			calc(100% - var(--cut-sm)) 100%,
+			0 100%,
+			0 var(--cut-sm)
+		);
+	}
+
+	.faq summary {
+		cursor: pointer;
+		list-style: none;
+		padding: 0.7rem 0.9rem;
+		font-family: var(--font-display);
+		font-weight: 600;
+		letter-spacing: 0.02em;
+		color: var(--text);
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 0.6rem;
+	}
+
+	.faq summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.faq summary::after {
+		content: '+';
+		font-family: var(--font-display);
+		color: var(--accent);
+		font-size: 1.2rem;
+		line-height: 1;
+	}
+
+	.faq details[open] summary::after {
+		content: '–';
+	}
+
+	.faq details p {
+		margin: 0;
+		padding: 0 0.9rem 0.8rem;
+		font-size: 0.92rem;
+	}
 </style>

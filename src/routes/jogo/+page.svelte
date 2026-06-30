@@ -7,6 +7,7 @@
 	import MapVeto from '$lib/components/MapVeto.svelte';
 	import MatchupPreview from '$lib/components/MatchupPreview.svelte';
 	import ModifierList from '$lib/components/ModifierList.svelte';
+	import FinalRoster from '$lib/components/FinalRoster.svelte';
 	import PlayerCard from '$lib/components/PlayerCard.svelte';
 	import PlayoffBracket from '$lib/components/PlayoffBracket.svelte';
 	import RoleBoard from '$lib/components/RoleBoard.svelte';
@@ -436,6 +437,9 @@
 				<p class="grid-line">
 					{#each game.tournament.userMatches as m (m.stage)}{m.userWon ? '🟩' : '🟥'}{/each}
 				</p>
+				{#if game.draft}
+					<FinalRoster picks={game.draft.picks} majors={game.majors} />
+				{/if}
 				<button class="btn" onclick={copyShare}>
 					{copied ? '✓ Copiado!' : '📋 Copiar resultado'}
 				</button>

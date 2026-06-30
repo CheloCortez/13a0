@@ -48,6 +48,8 @@ export interface MajorIndexEntry {
 export interface DraftedPlayer extends Player {
 	/** Função em que foi escalado. null = não alocado (modo cego: usuário aloca na revisão). */
 	slot: Role | null;
+	/** ID do time de origem (chave dos logos: `${majorId}/${teamId}`). Ausente em saves antigos. */
+	teamId?: string;
 	teamName: string;
 	majorId: string;
 	majorName: string;
